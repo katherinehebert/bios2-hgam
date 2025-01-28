@@ -1,0 +1,3 @@
+## Hierarchical Generalized Additive Models
+
+### Block 2 - Digging deeper with latent variables
