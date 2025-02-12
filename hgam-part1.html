@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.253">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Camille Lévesque">
+<meta name="author" content="Katherine Hébert">
+<meta name="dcterms.date" content="2025-03-03">
+<meta name="description" content="This course is designed to demystify hierarchical modelling as powerful tools to model population dynamics, spatial distributions, and any non-linear relationships in your ecological data. The training will be divided into two blocks. First, we will cover hierarchies in biology, data, and in models to understand what hierarchical models are, some of the forms they can take, and the fundamentals of how they work. Second, we will introduce latent variable modelling as a way to explain even more of the variation in our response variables, to better disentangle the hierarchies of variation in our data. Both blocks will include a theoretical presentation followed by hands-on coding exercises to implement and interpret hierarchical GAMs.">
+
+<title>Hierarchical Generalized Additive Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="hgam-part1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="hgam-part1_files/libs/quarto-html/quarto.js"></script>
+<script src="hgam-part1_files/libs/quarto-html/popper.min.js"></script>
+<script src="hgam-part1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="hgam-part1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="hgam-part1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="hgam-part1_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="hgam-part1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="hgam-part1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="hgam-part1_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="toc-section-number">1</span>  Overview</a>
+  <ul class="collapse">
+  <li><a href="#requirements" id="toc-requirements" class="nav-link" data-scroll-target="#requirements">Requirements</a></li>
+  </ul></li>
+  <li><a href="#workshop-materials" id="toc-workshop-materials" class="nav-link" data-scroll-target="#workshop-materials"><span class="toc-section-number">2</span>  Workshop materials</a>
+  <ul class="collapse">
+  <li><a href="#about-the-data-set" id="toc-about-the-data-set" class="nav-link" data-scroll-target="#about-the-data-set">About the data set</a>
+  <ul class="collapse">
+  <li><a href="#data-file-setup-and-download" id="toc-data-file-setup-and-download" class="nav-link" data-scroll-target="#data-file-setup-and-download">Data file setup and download</a></li>
+  </ul></li>
+  <li><a href="#part-1-hierarchical-generalized-additive-models-hgams" id="toc-part-1-hierarchical-generalized-additive-models-hgams" class="nav-link" data-scroll-target="#part-1-hierarchical-generalized-additive-models-hgams">Part 1: Hierarchical Generalized Additive Models (HGAMs)</a>
+  <ul class="collapse">
+  <li><a href="#prepare-the-data" id="toc-prepare-the-data" class="nav-link" data-scroll-target="#prepare-the-data">Prepare the data</a></li>
+  </ul></li>
+  <li><a href="#part-2-dynamic-and-hierarchical-generalized-additive-models" id="toc-part-2-dynamic-and-hierarchical-generalized-additive-models" class="nav-link" data-scroll-target="#part-2-dynamic-and-hierarchical-generalized-additive-models">Part 2: Dynamic (and Hierarchical!) Generalized Additive Models</a>
+  <ul class="collapse">
+  <li><a href="#why-dynamic" id="toc-why-dynamic" class="nav-link" data-scroll-target="#why-dynamic">Why “dynamic”?</a></li>
+  <li><a href="#pause-lets-talk-latents" id="toc-pause-lets-talk-latents" class="nav-link" data-scroll-target="#pause-lets-talk-latents">Pause: Let’s talk <em>latents</em></a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Hierarchical Generalized Additive Models</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Technical</div>
+    <div class="quarto-category">EN</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>This course is designed to demystify hierarchical modelling as powerful tools to model population dynamics, spatial distributions, and any non-linear relationships in your ecological data. The training will be divided into two blocks. First, we will cover hierarchies in biology, data, and in models to understand what hierarchical models are, some of the forms they can take, and the fundamentals of how they work. Second, we will introduce latent variable modelling as a way to explain even more of the variation in our response variables, to better disentangle the hierarchies of variation in our data. Both blocks will include a theoretical presentation followed by hands-on coding exercises to implement and interpret hierarchical GAMs.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading"></div>
+  
+    <div class="quarto-title-meta-contents">
+    Camille Lévesque 
+  </div>
+    <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Université de Sherbrooke
+          </p>
+      </div>
+      <div class="quarto-title-meta-contents">
+    Katherine Hébert 
+  </div>
+    <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            McGill University
+          </p>
+      </div>
+    </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 3, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="overview" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Overview</h1>
+<p>This course is designed to demystify hierarchical modelling as powerful tools to model population dynamics, spatial distributions, and any non-linear relationships in your ecological data. The training will be divided into two blocks.</p>
+<ol type="1">
+<li><p>First, we will cover hierarchies in biology, data, and in models to understand what hierarchical models are, some of the forms they can take, and the fundamentals of how they work.</p></li>
+<li><p>Second, we will introduce latent variable modelling as a way to explain even more of the variation in our response variables, to better disentangle the hierarchies of variation in our data.</p></li>
+</ol>
+<p>Both blocks will include a theoretical presentation followed by hands-on coding exercises to implement and interpret hierarchical GAMs.</p>
+<p>This workshop was developed with support from the <a href="https://bios2.usherbrooke.ca/">NSERC CREATE Computational Biodiversity Science and Services (BIOS²)</a> training program.</p>
+<section id="requirements" class="level2">
+<h2 class="anchored" data-anchor-id="requirements">Requirements</h2>
+<section id="familiarity-with-generalized-additive-modelling" class="level4">
+<h4 class="anchored" data-anchor-id="familiarity-with-generalized-additive-modelling">Familiarity with Generalized Additive Modelling</h4>
+<p>We recommend previous experience with GAMs before taking this training. If you would like to follow an introduction to GAMs before this workshop, please have a look at Eric Pedersen’s <a href="https://bios2.usherbrooke.ca/2021/10/20/workshop-gams-2021/">Introduction to GAMs</a> and/or the Québec Centre for Biodiversity Science’s <a href="http://r.qcbs.ca/workshop08/book-en/">Workshop 8: GAMs</a>.</p>
+</section>
+<section id="r-rstudio" class="level4">
+<h4 class="anchored" data-anchor-id="r-rstudio">R &amp; RStudio</h4>
+<p>The workshop assumes basic familiarity with R/RStudio. To be able to follow along with the practical exercises on your own computer, in addition to downloading the data files above, you will need to do the following:</p>
+<p>Install the latest version of R for your operating system: <a href="https://cran.r-project.org/" class="uri">https://cran.r-project.org/</a>. Install the latest version of RStudio for your operating system: <a href="https://www.rstudio.com/products/rstudio/download/" class="uri">https://www.rstudio.com/products/rstudio/download/</a></p>
+</section>
+<section id="r-packages" class="level4">
+<h4 class="anchored" data-anchor-id="r-packages">R packages</h4>
+<p>Install and load the packages that we will use during the workshop by executing the following code in R version 4.2.0:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install packages from CRAN</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(pkgs = c("mvgam", "mgcv", "gratia", "marginaleffects", "ggplot2"), dependencies = TRUE)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"dplyr"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"tidyr"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"mvgam"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"mgcv"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"gratia"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"marginaleffects"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"ggplot2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+</section>
+</section>
+<section id="workshop-materials" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Workshop materials</h1>
+<section id="about-the-data-set" class="level2">
+<h2 class="anchored" data-anchor-id="about-the-data-set">About the data set</h2>
+<p>In this workshop, we will be analyzing time series of a groundfish community in the Northwest Atlantic Newfoundland Shelf from 1980 to 2013. These data are published the article:</p>
+<p>Pedersen Eric J., et al.&nbsp;(2017). Signatures of the collapse and incipient recovery of an overexploited marine ecosystem. <em>Proc. R. Soc. Open Sci.</em> 4170215. <a href="http://doi.org/10.1098/rsos.170215" class="uri">http://doi.org/10.1098/rsos.170215</a></p>
+<p>For this workshop, we will work with a subset of 10 of the 30 species included in the article: <em>Anarhichas denticulatus, Gadus morhua, Glyptocephalus cynoglossus, Hippoglossoides platessoides, Raja spinicauda, Raja radiata, Raja senta, Reinhardtius hippoglossoides, Sebastes marinus, Sebastes mentella.</em></p>
+<section id="data-file-setup-and-download" class="level3">
+<h3 class="anchored" data-anchor-id="data-file-setup-and-download">Data file setup and download</h3>
+<p>Load the prepared dataset:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">=</span> <span class="fu">readRDS</span>(<span class="at">file =</span> <span class="st">"data/fish-community.rds"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>years <span class="ot">=</span> <span class="fu">rownames</span>(dat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Plot the data to get a first look at how species’ biomasses changed through time:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">matplot</span>(dat, <span class="at">type=</span><span class="st">"l"</span>, <span class="at">lty =</span> <span class="dv">1</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="fu">rainbow</span>(<span class="at">n =</span> <span class="dv">10</span>,<span class="at">v =</span> .<span class="dv">8</span>),</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">ylab =</span> <span class="st">"Biomass"</span>, <span class="at">x =</span> years)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="hgam-part1_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="part-1-hierarchical-generalized-additive-models-hgams" class="level2">
+<h2 class="anchored" data-anchor-id="part-1-hierarchical-generalized-additive-models-hgams">Part 1: Hierarchical Generalized Additive Models (HGAMs)</h2>
+<section id="prepare-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-data">Prepare the data</h3>
+<p>First, the data needs to be prepared into a long format (i.e., one observation per row). Later (in Part 2), the <code>mvgam</code> package will require specific column names, so we will prepare the data to match the package’s requirements.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat_l <span class="ot">=</span> dat <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># First, we need a "time" column to index the observations at each time step</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"time"</span> <span class="ot">=</span> years) <span class="sc">|&gt;</span> <span class="co"># make a new column with year values</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to long format</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">-</span>time, <span class="co"># only apply to species' biomass columns</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>               </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>               <span class="co"># Next, we need a "series" column that can be indexed to pick each time series</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>               <span class="co"># In this case, it is species names because we have 1 time series per species</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"series"</span>, <span class="co"># move species names into a "series" column</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>               </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>               <span class="co"># Finally, the response variable (what we measured) should be in</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>               <span class="co"># a "y" column</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"y"</span>) <span class="co"># move biomass values into a "y" column</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>[stuff]</p>
+</section>
+</section>
+<section id="part-2-dynamic-and-hierarchical-generalized-additive-models" class="level2">
+<h2 class="anchored" data-anchor-id="part-2-dynamic-and-hierarchical-generalized-additive-models">Part 2: Dynamic (and Hierarchical!) Generalized Additive Models</h2>
+<section id="why-dynamic" class="level3">
+<h3 class="anchored" data-anchor-id="why-dynamic">Why “dynamic”?</h3>
+<p>Above, we modelled species’ biomass fluctuations through time with a hierarchical structure to understand how different species’ biomasses changed through time.</p>
+<p>Before we continue, let’s “zoom out” a little and think about how our model relates to ecology. Our model is saying that species’ biomasses changed through time, and that these changes vary across species (some species’ biomasses increased, others decreased, and others stayed pretty stable). All we have to explain biomass change through time is (1) time itself, and (2) species. Time was a linear predictor, and species was a factor variable used to structure the observations according to species.</p>
+<p>Are there other factors that could explain why species’ biomasses changed through time during this period? Yes, absolutely! There are factors like commercial fishing, climate variations, species interactions, and more at play in this community. These factors all leave an “imprint” in the time series we have here. And most importantly, these factors <strong>vary through time</strong> - they are themselves time series with their own temporal patterns.</p>
+<p>The model we will be building in this section is a <strong>dynamic factor model:</strong> it assumes the factors that predict our response variable (i.e.&nbsp;biomass) evolve as time series.</p>
+<p><strong>But, do we have any measured predictors to add to the model to capture the influence of these factors?</strong> Unfortunately, as is often the case in ecological studies, we do not* have measurements of these predictors through time.</p>
+<p><em>(*The study from which we are borrowing the data actually <strong>does</strong> have some explanatory predictors we could add here - but let’s pretend we don’t know that!)</em></p>
+<p>There are three important things to think about here:</p>
+<ol type="1">
+<li><p>There are <strong>unmeasured predictors</strong> that influence the trend we measured and are now modelling. The signature of these unmeasured processes is in the data, but we cannot capture it with the previous model because we did not include these predictors (all we had was time and species to explain the biomass trends). This is called <strong>“latent variation”</strong>;</p></li>
+<li><p>These processes are not static - they are <strong>dynamic</strong> (hey! that’s in the name of the model!). Like our response variable, these unmeasured predictors <strong>vary through time</strong> (and are not linear either!).</p>
+<ul>
+<li>For example, commercial fishing pressure was high in the 1980s to mid-1990s and was then significantly reduced in the late 1990s onward. We can think similarly about climate fluctuating through time.</li>
+</ul></li>
+<li><p>Each species responds to these unmeasured predictors in their own way. (This is where the <strong>“hierarchical”</strong> bit comes back in!)</p></li>
+</ol>
+</section>
+<section id="pause-lets-talk-latents" class="level3">
+<h3 class="anchored" data-anchor-id="pause-lets-talk-latents">Pause: Let’s talk <em>latents</em></h3>
+<p>You may have noticed that we slipped a new term into the previous section: “latent variation”. The definition of “latent” in the Merriam-Webster dictionary is:</p>
+<blockquote class="blockquote">
+<p>Present and capable of emerging or developing but not now visible, obvious, active, or symptomatic.</p>
+<p>OR</p>
+<p>a fingerprint (as at the scene of a crime) that is scarcely visible but can be developed for study</p>
+</blockquote>
+<p>It can be helpful to use this definition to conceptualise latent variation in our data. As we said above, there are “imprints” of factors that we didn’t measure on the biomass time series we are modelling. These signals are present and influence the trends we estimate, but are “scarcely visible” because we lack information to detect them with time and species names alone. But - we can develop them for study!</p>
+<p>In statistical models, latent variables are essentially random predictors that are generated during the modelling process to capture correlated variations between multiple responses (species, for example). The idea is that a bunch of these latent variables are randomly generated, and they are penalized until the model only retains a minimal set of latent variables that capture the main axes of covariation between responses. (Here, it can be useful to think of how a PCA reduces the dimensions of a dataset to a minimum of informative “axes”).</p>
+<p>In a latent temporal model, these latent variables condense the variation that is left unexplained into a “predictor” that capture some structured pattern across responses (e.g.&nbsp;species’ biomass trends) through time. Each species is assigned a “factor loading” for each latent variable, which represents the species’ response to the latent variable.</p>
+<div class="cell">
+
+</div>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
