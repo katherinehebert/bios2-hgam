@@ -1,5 +1,5 @@
 ---
-title: "Hierarchical Generalized Additive Models"
+title: "Introduction to Hierarchical Generalized Additive Models"
 description: |
   This course is designed to demystify hierarchical modelling as powerful tools to model population dynamics, spatial distributions, and any non-linear relationships in your ecological data. The training will be divided into two blocks. First, we will cover hierarchies in biology, data, and in models to understand what hierarchical models are, some of the forms they can take, and the fundamentals of how they work. Second, we will introduce latent variable modelling as a way to explain even more of the variation in our response variables, to better disentangle the hierarchies of variation in our data. Both blocks will include a theoretical presentation followed by hands-on coding exercises to implement and interpret hierarchical GAMs.
 author:
@@ -13,6 +13,7 @@ image: image.jpg
 toc: true
 number-sections: true
 number-depth: 1
+theme: lux
 ---
 
 # Overview
@@ -27,9 +28,19 @@ Both blocks will include a theoretical presentation followed by hands-on coding 
 
 This workshop was developed with support from the [NSERC CREATE Computational Biodiversity Science and Services (BIOS²)](https://bios2.usherbrooke.ca/) training program.
 
+## Learning outcomes
+
+1.  Understand how a hierarchical model works, and how it can be used to capture nonlinear effects
+
+2.  Understand dynamic modelling, and how latent variables can be used to capture dynamic processes like temporal or spatial autocorrelation
+
+3.  Use the R packages `mgcv` and `mvgam` packages to build and fit hierarchical models
+
+4.  Understand how to visualize and interpret hierarchical models with these packages
+
 ## Requirements
 
-#### Familiarity with Generalized Additive Modelling 
+#### Familiarity with Generalized Additive Modelling
 
 We recommend previous experience with GAMs before taking this training. If you would like to follow an introduction to GAMs before this workshop, please have a look at Eric Pedersen’s [Introduction to GAMs](https://bios2.usherbrooke.ca/2021/10/20/workshop-gams-2021/) and/or the Québec Centre for Biodiversity Science’s [Workshop 8: GAMs](http://r.qcbs.ca/workshop08/book-en/).
 
@@ -55,6 +66,10 @@ library("gratia")
 library("marginaleffects")
 library("ggplot2")
 ```
+
+### Stan
+
+Please note that for Block 2, we will be fitting models using `Stan`. `Stan` must be installed (along with either `rstan` and/or `cmdstanr`). Please refer to installation links for `Stan` with `cmdstandr` [here](https://mc-stan.org/cmdstanr/) (or with `rstan` [here](https://mc-stan.org/users/interfaces/rstan)).
 
 ------------------------------------------------------------------------
 
@@ -96,7 +111,7 @@ First, the data needs to be prepared into a long format (i.e., one observation p
 dat_l = dat |>
   
   # First, we need a "time" column to index the observations at each time step
-  mutate("time" = years) |> # make a new column with year values
+  mutate("time" = as.numeric(years)) |> # make a new column with year values
   
   # Convert to long format
   pivot_longer(cols = -time, # only apply to species' biomass columns
@@ -107,53 +122,21 @@ dat_l = dat |>
                
                # Finally, the response variable (what we measured) should be in
                # a "y" column
-               values_to = "y") # move biomass values into a "y" column
+               values_to = "y") # move biomass values into a "y" column 
+
+dat_l$series = factor(dat_l$series)
 ```
 
 \[stuff\]
 
-## Part 2: Dynamic (and Hierarchical!) Generalized Additive Models
-
-### Why "dynamic"?
-
-Above, we modelled species' biomass fluctuations through time with a hierarchical structure to understand how different species' biomasses changed through time.
-
-Before we continue, let's "zoom out" a little and think about how our model relates to ecology. Our model is saying that species' biomasses changed through time, and that these changes vary across species (some species' biomasses increased, others decreased, and others stayed pretty stable). All we have to explain biomass change through time is (1) time itself, and (2) species. Time was a linear predictor, and species was a factor variable used to structure the observations according to species.
-
-Are there other factors that could explain why species' biomasses changed through time during this period? Yes, absolutely! There are factors like commercial fishing, climate variations, species interactions, and more at play in this community. These factors all leave an "imprint" in the time series we have here. And most importantly, these factors **vary through time** - they are themselves time series with their own temporal patterns.
-
-The model we will be building in this section is a **dynamic factor model:** it assumes the factors that predict our response variable (i.e. biomass) evolve as time series.
-
-**But, do we have any measured predictors to add to the model to capture the influence of these factors?** Unfortunately, as is often the case in ecological studies, we do not\* have measurements of these predictors through time.
-
-*(\*The study from which we are borrowing the data actually **does** have some explanatory predictors we could add here - but let's pretend we don't know that!)*
-
-There are three important things to think about here:
-
-1.  There are **unmeasured predictors** that influence the trend we measured and are now modelling. The signature of these unmeasured processes is in the data, but we cannot capture it with the previous model because we did not include these predictors (all we had was time and species to explain the biomass trends). This is called **"latent variation"**;
-
-2.  These processes are not static - they are **dynamic** (hey! that's in the name of the model!). Like our response variable, these unmeasured predictors **vary through time** (and are not linear either!).
-
-    -   For example, commercial fishing pressure was high in the 1980s to mid-1990s and was then significantly reduced in the late 1990s onward. We can think similarly about climate fluctuating through time.
-
-3.  Each species responds to these unmeasured predictors in their own way. (This is where the **"hierarchical"** bit comes back in!)
-
-### Pause: Let's talk *latents*
-
-You may have noticed that we slipped a new term into the previous section: "latent variation". The definition of "latent" in the Merriam-Webster dictionary is:
-
-> Present and capable of emerging or developing but not now visible, obvious, active, or symptomatic.
->
-> OR
->
-> a fingerprint (as at the scene of a crime) that is scarcely visible but can be developed for study
-
-It can be helpful to use this definition to conceptualise latent variation in our data. As we said above, there are "imprints" of factors that we didn't measure on the biomass time series we are modelling. These signals are present and influence the trends we estimate, but are "scarcely visible" because we lack information to detect them with time and species names alone. But - we can develop them for study!
-
-In statistical models, latent variables are essentially random predictors that are generated during the modelling process to capture correlated variations between multiple responses (species, for example). The idea is that a bunch of these latent variables are randomly generated, and they are penalized until the model only retains a minimal set of latent variables that capture the main axes of covariation between responses. (Here, it can be useful to think of how a PCA reduces the dimensions of a dataset to a minimum of informative "axes").
-
-In a latent temporal model, these latent variables condense the variation that is left unexplained into a "predictor" that capture some structured pattern across responses (e.g. species' biomass trends) through time. Each species is assigned a "factor loading" for each latent variable, which represents the species' response to the latent variable.
+Finding the number of knots
 
 ```{r}
-
+# let's start with 1 knot every 4 years
+knots = ceiling(length(years)/4) 
+npops = levels(dat_l$series) |> length()
+kcheck_gam = mgcv::gam(y ~ s(time, bs = "tp", k = knots) + 
+                           s(series, bs = 're'),
+                       data = dat_l)
+mgcv::gam.check(kcheck_gam)
 ```

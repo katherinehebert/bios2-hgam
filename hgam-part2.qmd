@@ -1,3 +1,102 @@
-## Hierarchical Generalized Additive Models
+---
+theme: lux
+---
 
-### Block 2 - Digging deeper with latent variables
+# Block 2 - Digging deeper with Dynamic (and Hierarchical!) Generalized Additive Models
+
+## Why "dynamic"?
+
+Above, we modelled species' biomass fluctuations through time with a hierarchical structure to understand how different species' biomasses changed through time.
+
+Before we continue, let's "zoom out" a little and think about how our model relates to ecology. Our model is saying that species' biomasses changed through time, and that these changes vary across species (some species' biomasses increased, others decreased, and others stayed pretty stable). All we have to explain biomass change through time is (1) time itself, and (2) species. Time was a linear predictor, and species was a factor variable used to structure the observations according to species.
+
+Are there other factors that could explain why species' biomasses changed through time during this period? Yes, absolutely! There are factors like commercial fishing, climate variations, species interactions, and more at play in this community. These factors all leave an "imprint" in the time series we have here. And most importantly, these factors **vary through time** - they are themselves time series with their own temporal patterns.
+
+The model we will be building in this section is a **dynamic factor model:** it assumes the factors that predict our response variable (i.e. biomass) evolve as time series.
+
+**But, do we have any measured predictors to add to the model to capture the influence of these factors?** Unfortunately, as is often the case in ecological studies, we do not\* have measurements of these predictors through time.
+
+*(\*The study from which we are borrowing the data actually **does** have some explanatory predictors we could add here - but let's pretend we don't know that!)*
+
+There are three important things to think about here:
+
+1.  There are **unmeasured predictors** that influence the trend we measured and are now modelling. The signature of these unmeasured processes is in the data, but we cannot capture it with the previous model because we did not include these predictors (all we had was time and species to explain the biomass trends). This is called **"latent variation"**;
+
+2.  These processes are not static - they are **dynamic** (hey! that's in the name of the model!). Like our response variable, these unmeasured predictors **vary through time** (and are not linear either!).
+
+    -   For example, commercial fishing pressure was high in the 1980s to mid-1990s and was then significantly reduced in the late 1990s onward. We can think similarly about climate fluctuating through time.
+
+3.  Each species responds to these unmeasured predictors in their own way. (This is where the **"hierarchical"** bit comes back in!)
+
+### Pause: Let's talk *latents*
+
+You may have noticed that we slipped a new term into the previous section: "latent variation". The definition of "latent" in the Merriam-Webster dictionary is:
+
+> Present and capable of emerging or developing but not now visible, obvious, active, or symptomatic.
+>
+> OR
+>
+> a fingerprint (as at the scene of a crime) that is scarcely visible but can be developed for study
+
+It can be helpful to use this definition to conceptualise latent variation in our data. As we said above, there are "imprints" of factors that we didn't measure on the biomass time series we are modelling. These signals are present and influence the trends we estimate, but are "scarcely visible" because we lack information to detect them with time and species names alone. But - we can develop them for study!
+
+In statistical models, latent variables are essentially random predictors that are generated during the modelling process to capture correlated variations between multiple responses (species, for example). The idea is that a bunch of these latent variables are randomly generated, and they are penalized until the model only retains a minimal set of latent variables that capture the main axes of covariation between responses. (Here, it can be useful to think of how a PCA reduces the dimensions of a dataset to a minimum of informative "axes"). Each species is then assigned a "factor loading" for each latent variable, which represents the species' response to the latent variable.
+
+In a temporal latent model, these latent variables condense the variation that is left unexplained into a "predictor" that capture some structured pattern across responses (e.g. species' biomass trends) through time. For example, these latent variables can capture temporal autocorrelation between observations, meaning that we can tell our model to account for the fact that each observation is probably closer to neighbouring values though time (e.g. year 1 and year 2) than to a value that is several time steps away (e.g. year 1 and year 20).
+
+In a spatial model, these latent variables can be applied to capture dynamic processes in space, such as spatial autocorrelation. Similarly to the temporal model, we often make the assumption that observations that are closer in space are more similar than observations that are further apart, because ecological patterns are in part driven by the environment, which is itself spatially-autocorrelated.
+
+Okay, now that we've covered what a dynamic model is, let's make one!
+
+## Dynamic modelling for multivariate time series with `mvgam`
+
+### The `mvgam` package
+
+The package `mvgam` is an interface to `Stan`, which is a language used to specify Bayesian statistical models. You could code these models directly in `Stan` if you wanted to - but `mvgam` allows you to specify the model in `R` (using the `R` syntax you know and love) and produces and compiles the `Stan` file for your model for you. Isn't that nice? That means you can focus on thinking about what your model should be doing, rather than on learning a new programming language (which can be great to learn, too!).
+
+The `mvgam` package has a lot more functionalities (many observation families for different types of data, forecasting functions, and more) than we will be using here. We *really* recommend that you have a look at the quite impressive amount of documentation about the package if you're interested in specifying different models with your own data. See the seminars, tutorials, vignettes, and more here: (nicholasjclark.github.io/mvgam)\[https://nicholasjclark.github.io/mvgam/\].
+
+### The `mvgam` package
+
+First, load the `mvgam` package:
+
+```{r, message=FALSE}
+library(mvgam)
+```
+
+Let's build a model with a random effect on series in `mvgam` (just as we did with `mgcv`):
+
+```{r, cache=TRUE, eval = FALSE}
+dgam1 = mvgam(formula = 
+                y ~ 
+                # global smoother for all populations over time
+                s(time, bs = "tp", k = knots) + 
+                # random intercept per species
+                s(series, bs = 're', k = npops),
+              
+              # our long-format dataset
+              data = dat_l,
+              
+              # observation family
+              family = "gaussian",
+              
+              # latent trend model
+              trend_model = 'None', # we are not using latent variables yet!
+              
+              # compilation & sampling settings
+              use_stan = TRUE,
+              chains = 3,
+              # here, we are only going to use a few iterations to keep the
+              # model quick for the tutorial. If you were really going to run
+              # this, you should use way more samples & burnin
+              burnin = 500, 
+              samples = 3000,
+              
+              # here, we are using the default priors, but you can set your own!
+              prior_simulation = FALSE)
+```
+
+```{r,include=FALSE, eval=FALSE}
+saveRDS(dgam1, "saved-objects/dgam1.rds")
+```
+
