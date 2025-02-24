@@ -6,27 +6,23 @@ theme: lux
 
 ## Why "dynamic"?
 
-Above, we modelled species' biomass fluctuations through time with a hierarchical structure to understand how different species' biomasses changed through time.
+Above, we modelled how plankton counts fluctuated through time with a hierarchical structure to understand how different groups vary through time. We noticed a strong seasonal pattern in these fluctuations.
 
-Before we continue, let's "zoom out" a little and think about how our model relates to ecology. Our model is saying that species' biomasses changed through time, and that these changes vary across species (some species' biomasses increased, others decreased, and others stayed pretty stable). All we have to explain biomass change through time is (1) time itself, and (2) species. Time was a linear predictor, and species was a factor variable used to structure the observations according to species.
+Before we continue, let's "zoom out" a little and think about how our model relates to ecology. Our model is saying that plankton abundances generally follow the seasonal fluctuations in temperature in Lake Washington, and that differently plankton groups fluctuate a bit differently. All we have to explain these fluctuations through time is (1) time itself, (2) counts of different plankton groups, and (3) temperature through time.
 
-Are there other factors that could explain why species' biomasses changed through time during this period? Yes, absolutely! There are factors like commercial fishing, climate variations, species interactions, and more at play in this community. These factors all leave an "imprint" in the time series we have here. And most importantly, these factors **vary through time** - they are themselves time series with their own temporal patterns.
+Are there other factors that could explain why plankton groups vary through time during this period? Yes, absolutely! There are unmeasured environmental factors that play some role here - for example, water chemistry - as well as some variations due to the process of measuring these plankton counts through time (i.e., measurement variability or observation error). These factors all leave an "imprint" in the time series we have here. And most importantly, these factors **vary through time** - they are themselves time series with their own temporal patterns.
 
 The model we will be building in this section is a **dynamic factor model:** it assumes the factors that predict our response variable (i.e. biomass) evolve as time series.
 
 **But, do we have any measured predictors to add to the model to capture the influence of these factors?** Unfortunately, as is often the case in ecological studies, we do not\* have measurements of these predictors through time.
 
-*(\*The study from which we are borrowing the data actually **does** have some explanatory predictors we could add here - but let's pretend we don't know that!)*
-
 There are three important things to think about here:
 
-1.  There are **unmeasured predictors** that influence the trend we measured and are now modelling. The signature of these unmeasured processes is in the data, but we cannot capture it with the previous model because we did not include these predictors (all we had was time and species to explain the biomass trends). This is called **"latent variation"**;
+1.  There are **unmeasured predictors** that influence the trend we measured and are now modelling. The signature of these unmeasured processes is in the data, but we cannot capture it with the previous model because we did not include these predictors. This is called **"latent variation"**;
 
 2.  These processes are not static - they are **dynamic** (hey! that's in the name of the model!). Like our response variable, these unmeasured predictors **vary through time** (and are not linear either!).
 
-    -   For example, commercial fishing pressure was high in the 1980s to mid-1990s and was then significantly reduced in the late 1990s onward. We can think similarly about climate fluctuating through time.
-
-3.  Each species responds to these unmeasured predictors in their own way. (This is where the **"hierarchical"** bit comes back in!)
+3.  Each species responds to these unmeasured predictors in their own way. (This is where the **"hierarchical"** bit comes in!)
 
 ### Pause: Let's talk *latents*
 
@@ -38,11 +34,11 @@ You may have noticed that we slipped a new term into the previous section: "late
 >
 > a fingerprint (as at the scene of a crime) that is scarcely visible but can be developed for study
 
-It can be helpful to use this definition to conceptualise latent variation in our data. As we said above, there are "imprints" of factors that we didn't measure on the biomass time series we are modelling. These signals are present and influence the trends we estimate, but are "scarcely visible" because we lack information to detect them with time and species names alone. But - we can develop them for study!
+It can be helpful to use this definition to conceptualise latent variation in our data. As we said above, there are "imprints" of factors that we didn't measure on the time series we are modelling. These signals are present and influence the trends we estimate, but are "scarcely visible" because we lack information to detect them. But - we can develop them for further study!
 
 In statistical models, latent variables are essentially random predictors that are generated during the modelling process to capture correlated variations between multiple responses (species, for example). The idea is that a bunch of these latent variables are randomly generated, and they are penalized until the model only retains a minimal set of latent variables that capture the main axes of covariation between responses. (Here, it can be useful to think of how a PCA reduces the dimensions of a dataset to a minimum of informative "axes"). Each species is then assigned a "factor loading" for each latent variable, which represents the species' response to the latent variable.
 
-In a temporal latent model, these latent variables condense the variation that is left unexplained into a "predictor" that capture some structured pattern across responses (e.g. species' biomass trends) through time. For example, these latent variables can capture temporal autocorrelation between observations, meaning that we can tell our model to account for the fact that each observation is probably closer to neighbouring values though time (e.g. year 1 and year 2) than to a value that is several time steps away (e.g. year 1 and year 20).
+In a temporal latent model, these latent variables condense the variation that is left unexplained into a "predictor" that capture some structured pattern across responses (e.g. species' abundance trends) through time. For example, these latent variables can capture temporal autocorrelation between observations, meaning that we can tell our model to account for the fact that each observation is probably closer to neighbouring values though time (e.g. year 1 and year 2) than to a value that is several time steps away (e.g. year 1 and year 20).
 
 In a spatial model, these latent variables can be applied to capture dynamic processes in space, such as spatial autocorrelation. Similarly to the temporal model, we often make the assumption that observations that are closer in space are more similar than observations that are further apart, because ecological patterns are in part driven by the environment, which is itself spatially-autocorrelated.
 
@@ -56,7 +52,17 @@ The package `mvgam` is an interface to `Stan`, which is a language used to speci
 
 The `mvgam` package has a lot more functionalities (many observation families for different types of data, forecasting functions, and more) than we will be using here. We *really* recommend that you have a look at the quite impressive amount of documentation about the package if you're interested in specifying different models with your own data. See the seminars, tutorials, vignettes, and more here: (nicholasjclark.github.io/mvgam)\[https://nicholasjclark.github.io/mvgam/\].
 
-### The `mvgam` package
+### A little warning 
+
+> In Part 2, we will build a Bayesian model but will not discuss Bayesian theory or practices in detail. This is just a quick tutorial to hit the ground running, but before building your own model, you should have a better grasp of how Bayesian models work, and how to build them with care. To learn more:
+>
+> -   [Towards A Principled Bayesian Workflow](https://betanalpha.github.io/assets/case_studies/principled_bayesian_workflow.html) by Michael Betancourt
+>
+> -   How to change the default priors in `mvgam` in [this example](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia#Multiseries_dynamics)
+>
+> -   More documentation, vignettes, and tutorials can be found on the [`mvgam` site](https://nicholasjclark.github.io/mvgam/)
+
+### Build a hierarchical model with `mvgam`
 
 First, load the `mvgam` package:
 
@@ -64,39 +70,198 @@ First, load the `mvgam` package:
 library(mvgam)
 ```
 
-Let's build a model with a random effect on series in `mvgam` (just as we did with `mgcv`):
+Our model is an attempt to estimate how plankton vary in abundance through time. Let's consider what we know about the system, to help us build this model:
+
+1.  We know that there is strong seasonal variation due to temperature changes within each year that drives all plankton groups to fluctuate through time.
+
+2.  We are also interested in how plankton abundance is changing annually, on the longer term of the time series.
+
+3.  We know that these plankton are embedded in a complex system within a lake, and that their dynamics may be dependent for many reasons. In other words, some groups may be correlated through time, and even more complicated - these correlations may not be happening immediately. There may be *lagged* correlations between groups as well!
+
+Let's build this model piece by piece, to capture each of these levels of variation:
+
+First, let's split the data into a training set, used to build the model, and a testing set, used to evaluate the model.
+
+```{r, echo = F}
+plankton_data = readRDS(here::here("saved-objects/plankton-data.rds"))
+```
+
+```{r}
+plankton_train <- plankton_data %>%
+  dplyr::filter(time <= 112)
+plankton_test <- plankton_data %>%
+  dplyr::filter(time > 112)
+```
+
+Next, we'll build a hierarchical GAM with a global smoother for all groups, and species-specific smooths in `mvgam`. This will allow us to capture the "global" seasonality that drives all plankton groups to fluctuate similarly through the time series, and to capture how each group's seasonal fluctuations differ from this overall, global trend. Here, we will not include an intercept, because we converted our response variables into z-scores with a mean of 0 (so, our intercept is 0):
 
 ```{r, cache=TRUE, eval = FALSE}
-dgam1 = mvgam(formula = 
-                y ~ 
-                # global smoother for all populations over time
-                s(time, bs = "tp", k = knots) + 
-                # random intercept per species
-                s(series, bs = 're', k = npops),
-              
-              # our long-format dataset
-              data = dat_l,
-              
-              # observation family
-              family = "gaussian",
-              
-              # latent trend model
-              trend_model = 'None', # we are not using latent variables yet!
-              
-              # compilation & sampling settings
-              use_stan = TRUE,
-              chains = 3,
-              # here, we are only going to use a few iterations to keep the
-              # model quick for the tutorial. If you were really going to run
-              # this, you should use way more samples & burnin
-              burnin = 500, 
-              samples = 3000,
-              
-              # here, we are using the default priors, but you can set your own!
-              prior_simulation = FALSE)
+notrend_mod <- mvgam(formula = 
+                       y ~ 
+                       # tensor of temp and month to capture
+                       # "global" seasonality across plankton groups
+                       te(temp, month, k = c(4, 4)) +
+                       
+                       # series-specific deviation tensor products
+                       # in other words, each plankton group can deviate from the
+                       # global trend
+                       te(temp, month, k = c(4, 4), by = series),
+                     
+                     # set the observation family to Gaussian
+                     family = gaussian(),
+                     
+                     # our long-format dataset, split into a training and a testing set
+                     data = plankton_train,
+                     newdata = plankton_test,
+                     
+                     # no latent trend model for now (so we can see its impact later on!)
+                     trend_model = 'None',
+                     
+                     # compilation & sampling settings
+                     use_stan = TRUE,
+                     # here, we are only going to use the default sampling settings to keep the
+                     # model quick for the tutorial. If you were really going to run
+                     # this, you should use set the chains, samples, and burnin arguments.
+)
 ```
 
 ```{r,include=FALSE, eval=FALSE}
-saveRDS(dgam1, "saved-objects/dgam1.rds")
+saveRDS(notrend_mod, "saved-objects/notrend_mod.rds")
 ```
 
+```{r,include=FALSE, eval=TRUE}
+notrend_mod = readRDS(here::here("saved-objects/notrend_mod.rds"))
+```
+
+Let's look at the `Stan` code that `mvgam` just wrote and ran for us:
+
+```{r}
+stancode(notrend_mod)
+```
+
+And finally, the model summary.
+
+```{r}
+summary(notrend_mod, include_betas = FALSE)
+```
+
+#### Visualise the model
+
+Let's first plot the global smoother for all species over time:
+
+```{r}
+plot_mvgam_smooth(notrend_mod)
+```
+
+This is the shared seasonal trend estimated across all groups at once. We can see that the model was able to capture the seasonal temporal structure of the plankton counts, based on temperature and time (months).
+
+We can also see how each group deviates from this global smooth (i.e. the partial effects):
+
+```{r}
+gratia::draw(notrend_mod$mgcv_model)
+```
+
+We can see that the model was able to capture some differences between each plankton group's seasonal trend and the community's global trend.
+
+#### Inspect the model
+
+A great test of how good a model is, is to see how well it forecasts data we already have. We split the data into a training set and a test set above. Let's see how well the trained model predicts this test set!
+
+```{r, fig.ncol=2,results='hide'}
+sapply(1:5, function(x) plot(notrend_mod, type = 'forecast', series = x))
+```
+
+The points are the data points, and the red line and ribbon show the forecast trend and its credible intervals. Overall, these forecasts are okay, but not perfect - the data points are often within the credible intervals, and the forecasted trend seems to follow the seasonal trend pretty well. The model seems to understand that there is a strong seasonal trend in our observations, and is trying to predict it for each plankton group.
+
+But how's the model doing, overall? Let's plot the residuals:
+
+```{r,results='hide'}
+sapply(1:5, function(x) plot_mvgam_resids(notrend_mod, series = x))
+```
+
+Looking at the Autocorrelation Function plots (ACF), we can see that there's still a lot of temporal autocorrelation to deal with in the model. Let's try to address some of this with a dynamic model!
+
+### Add a dynamic process!
+
+Let's now add a latent trend component to the model, to capture some of the variation that isn't captured in our previous model.
+
+Let's assume there are latent trends that have some built-in temporal autocorrelation: each observation is closer to its neighbours in time than it is to observations that are several time steps away. In other words, N at time 1 is closer to N at time 2 than it is to N at time 100. This means we will estimate our latent trends using an autoregressive function of order 1 (1 time step), which you may recognize as an AR1 function.
+
+In `mvgam`, we can specify this as `AR(p = 1)` where `p = 1` sets the order of the autoregressive function (this can be set to a maximum order of 3).
+
+```{r, cache=TRUE, eval = FALSE}
+df_mod <- mvgam(formula=  
+                  y ~ 
+                  te(temp, month, k = c(4, 4)) +
+                  te(temp, month, k = c(4, 4), by = series),
+  
+              # latent trend model
+              # setting to order 1, meaning the autocorrelation is assumed to be 1 time step.
+  trend_model = AR(p = 1),  
+  use_lv = TRUE,
+  
+  # observation family
+  family = gaussian(),
+  
+  # our long-format datasets
+  data = plankton_train,
+  newdata = plankton_test,
+  
+  # use reduced samples for inclusion in tutorial data
+  samples = 100)
+```
+
+```{r,include=FALSE, eval=FALSE}
+saveRDS(df_mod, here::here("saved-objects/df_mod.rds"))
+```
+
+```{r,include=FALSE, eval=TRUE,cache=TRUE}
+df_mod = readRDS(here::here("saved-objects/df_mod.rds"))
+```
+
+#### Visualise the model
+
+Plot the global smoother for all species over time:
+
+```{r}
+plot_mvgam_smooth(df_mod)
+```
+
+This is the shared temporal trend estimated across all species at once. We can see that, overall, species' biomassess declined during this time period.
+
+Plot the species' estimated trends:
+
+```{r, fig.ncol=2, message=F, warning=F, results = 'hide'}
+sapply(1:5, function(x) plot_mvgam_trend(df_mod, series = x))
+```
+
+We can add each group's estimated rate of change in abundance through time to these plots . Think of this as the slope of their estimated trend at each time point - this can give us an idea of the rate at which some groups declined or grew during the time series:
+
+```{r, fig.ncol=2, message=F, warning=F, results = 'hide'}
+sapply(1:5, function(x) plot_mvgam_trend(df_mod, series = x, derivatives = TRUE))
+```
+
+Each group's derivative trend are pretty centred on the zero line, meaning they were fluctuating around their mean abundance rather than declining or growing in a consistent way through time. However, there are some time periods with larger shifts in abundance which could be investigated further if we wanted to understand how community dynamics may have changed during the time series.
+
+#### Species correlations
+
+One way to investigate community dynamics is to check out the correlations between plankton groups. These correlations are captured with the dynamic model, where we introduced AR1 latent trends to estimate unmeasured temporal processes in our data.
+
+Let's calculate and plot species' temporal correlations, and plot them as a heatmap. Red colors show positive correlations and blue colors show negative correlations. The darker the color, the stronger the correlations:
+
+```{r}
+species_correlations = lv_correlations(df_mod)
+
+# prepare the matrix for plotting
+toplot = species_correlations$mean_correlations
+toplot[upper.tri(species_correlations$mean_correlations)] <- NA
+colnames(toplot) = gsub("_", "\n", stringr::str_to_sentence(colnames(toplot)))
+rownames(toplot) = gsub("_", "\n", stringr::str_to_sentence(rownames(toplot)))
+
+# plot as a heatmap
+heatmap(toplot,
+        Colv = NA, Rowv = NA,
+        cexRow = 1, cexCol = 1, symm = TRUE,
+        distfun = function(c) as.dist(1 - c),
+        col = hcl.colors(n = 12, palette = 'Blue-Red'))
+```
