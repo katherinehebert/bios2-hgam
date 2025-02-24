@@ -86,7 +86,15 @@ Please note that for Block 2, we will be fitting models using `Stan`. `Stan` mus
 
 ## About the data set
 
-In this workshop, we will be analyzing time series of plankton counts (cells per mL) taken from Lake Washington in Washington, USA during a long-term monitoring study. The data are available in the `MARSS` package.
+In this workshop, we will be analyzing time series of plankton counts (cells per mL) taken from Lake Washington in Washington, USA during a long-term monitoring study. The data are available in the `MARSS` package, and are described and analyse in greater detail in this publication:
+
+> Hampton Stephanie E. , Scheuerell Mark D. , Schindler Daniel E. , (2006), Coalescence in the Lake Washington story: Interaction strengths in a planktonic food web, *Limnology and Oceanography*, 51, doi: [10.4319/lo.2006.51.5.2042](https://aslopubs.onlinelibrary.wiley.com/doi/abs/10.4319/lo.2006.51.5.2042).
+
+Some information about the data, from the `MARSS` package documentation ([link](https://atsa-es.github.io/MARSS/reference/plankton.html)):
+
+> The `lakeWAplankton` data set consists for two data sets: `lakeWAplanktonRaw` and a dataset derived from the raw dataset, `lakeWAplanktonTrans`. `lakeWAplanktonRaw` is a **32-year time series (1962-1994)** **of monthly plankton counts** from Lake Washington, Washington, USA. Columns 1 and 2 are year and month. Column 3 is temperature (C), column 4 is total phosphorous, and column 5 is pH. The next columns are the plankton counts in units of cells per mL for the phytoplankton and organisms per L for the zooplankton.
+>
+> `lakeWAplanktonTrans` is a transformed version of `lakeWAplanktonRaw`. Zeros have been replaced with NAs (missing). The logged (natural log) raw plankton counts have been standardized to a mean of zero and variance of 1 (so logged and then z-scored). Temperature, TP & pH were also z-scored but not logged (so z-score of the untransformed values for these covariates). The single missing temperature value was replaced with -1 and the single missing TP value was replaced with -0.3.
 
 [![](https://upload.wikimedia.org/wikipedia/commons/e/ec/Lake_Washington_region.png){fig-align="center"}](https://www.google.com/url?sa=i&url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3ALake_Washington_region.png&psig=AOvVaw3-T1CwR0iIWfiMD1B0WiFK&ust=1740498251184000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKjh87LT3IsDFQAAAAAdAAAAABAJ)
 
@@ -187,13 +195,15 @@ ggplot(data = plankton_data, aes(x = time)) +
 
 ## Part 1: Hierarchical Generalized Additive Models (HGAMs)
 
-Diatoms data set. *I want to illustrate nonlinearity for juste one series.
+Diatoms data set. \*I want to illustrate nonlinearity for juste one series.
+
 ```{r}
 # subset
 diatoms_data <- plankton_data[plankton_data$series == "Diatoms", ]
 ```
 
 Data points.
+
 ```{r}
 ggplot(diatoms_data, aes(x = time, y = y)) +
   geom_point() +
@@ -201,7 +211,9 @@ ggplot(diatoms_data, aes(x = time, y = y)) +
   labs(title = "Diatoms Data Points", x = "Year", y = "Y Value") +
   theme_minimal()
 ```
+
 Linear model
+
 ```{r}
 diatoms_lm <- lm(y ~ time, data = diatoms_data)
 
@@ -216,6 +228,7 @@ ggplot(diatoms_data, aes(x = time, y = y)) +
 ```
 
 GAM
+
 ```{r}
 # model
 diatoms_gam <- gam(y ~ s(time, bs = "cs", k = 50), data = diatoms_data)
@@ -230,4 +243,3 @@ gratia::draw(diatoms_gam)
 
 
 ```
-
