@@ -182,3 +182,62 @@ ggplot(data = plankton_data, aes(x = time)) +
 ------------------------------------------------------------------------
 
 ## Part 1: Hierarchical Generalized Additive Models (HGAMs)
+
+Diatoms data set. *I want to illustrate nonlinearity for juste one series.
+```{r}
+# subset
+diatoms_data <- plankton_data[plankton_data$series == "Diatoms", ]
+```
+
+Data points.
+```{r}
+ggplot(diatoms_data, aes(x = time, y = y)) +
+  geom_point() +
+  geom_line(aes(y = y), lwd = .4) +
+  labs(title = "Diatoms Data Points", x = "Year", y = "Y Value") +
+  theme_minimal()
+```
+Linear model
+```{r}
+diatoms_lm <- lm(y ~ time, data = diatoms_data)
+
+
+ggplot(diatoms_data, aes(x = time, y = y)) +
+  geom_point(color = "black") +  # Scatter points
+  geom_smooth(method = "lm", color = "blue1", fill = "lightgray", se = TRUE) +  # Regression line
+  labs(title = "Diatoms Data with Linear Regression Line",
+       x = "Time",
+       y = "Y Value") +
+  theme_minimal()
+```
+
+GAM
+```{r}
+# model
+diatoms_gam <- gam(y ~ s(time, bs = "cs", k = 50), data = diatoms_data)
+
+# graph
+gratia::draw(diatoms_gam)
+
+```
+
+```{r}
+# Create a sequence of values for time to get predictions
+time_seq <- data.frame(time = seq(min(diatoms_data$time), max(diatoms_data$time), length.out = 100))
+
+# Get predictions from the GAM model
+time_seq$predicted_y <- predict(diatoms_gam, newdata = time_seq)
+
+# Create the scatter plot with the GAM smooth line
+ggplot(diatoms_data, aes(x = time, y = y)) +
+  geom_point(color = "black") +  # Scatter points
+  geom_line(data = time_seq, aes(x = time, y = predicted_y), color = "orange") +  # GAM smooth line
+  labs(title = "Diatoms Data with GAM Smooth Line",
+       x = "Time",
+       y = "Y Value") +
+  theme_minimal()
+
+
+
+```
+
