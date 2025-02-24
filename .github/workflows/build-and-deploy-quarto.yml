@@ -1,0 +1,50 @@
+# Workflow to build and deploy Quarto to GitHub Pages 🚀
+name: "🚀 Quarto Build & Deploy Workflow"
+# The name of this workflow, now with a rocket emoji to highlight its purpose!
+
+permissions:
+  contents: write   # Grants write permission to repository contents (required for deploying changes)
+
+# ---------------------------------------------------------
+# Triggers: When the workflow will run
+# ---------------------------------------------------------
+on:
+  pull_request:
+    branches: [ "main" ]   # Trigger this workflow when a pull request targets the "main" branch 🛠️
+  push:
+    branches: [ "main" ]    # Trigger this workflow when changes are pushed to the "main" branch 🔄
+  workflow_dispatch:        # Allows manual triggering of this workflow via the GitHub Actions tab 👆
+
+# ---------------------------------------------------------
+# Jobs: One or more jobs that run as part of this workflow
+# ---------------------------------------------------------
+jobs:
+  build:
+    runs-on: ubuntu-latest   # Run this job on the latest Ubuntu runner (stable and fast!) 🐧
+
+    steps:
+      # Step 1: Checkout the repository so that the workflow can access the code
+      - name: "🔍 Checkout Repository Code"
+        uses: actions/checkout@v4  # Uses the official checkout action to retrieve your repo
+
+      # Step 2: Set up R to run the code
+      - name: "Set up R"
+        uses: r-lib/actions/setup-r@v2
+      
+      # Step 2: Set up the Quarto environment to render your project
+      - name: "⚙️ Set Up Quarto Environment"
+        uses: quarto-dev/quarto-actions/setup@v2  # Installs the Quarto CLI to render your presentation
+
+      # Step 3: Render the Quarto project (build slides and pages)
+      - name: "🎨 Render Quarto Slides & Pages"
+        run: |
+          quarto render hgam-part1.qmd
+          # This command renders the specified Quarto project file, building slides and pages.
+
+      # Step 4: Deploy pages to GitHub Pages when on the main branch
+      - name: "🚀 Deploy to GitHub Pages"
+        if: github.ref == 'refs/heads/main'  # Only run this step when on the 'main' branch
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages  # Target branch for GitHub Pages deployment
+          folder: docs    # Deploy the contents from the 'docs' folder
