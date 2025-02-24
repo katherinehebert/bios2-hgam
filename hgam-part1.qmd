@@ -193,7 +193,7 @@ Diatoms data set. *I want to illustrate nonlinearity for juste one series.
 diatoms_data <- plankton_data[plankton_data$series == "Diatoms", ]
 ```
 
-Data points.
+## Data points.
 ```{r}
 ggplot(diatoms_data, aes(x = time, y = y)) +
   geom_point() +
@@ -201,7 +201,7 @@ ggplot(diatoms_data, aes(x = time, y = y)) +
   labs(title = "Diatoms Data Points", x = "Year", y = "Y Value") +
   theme_minimal()
 ```
-Linear model
+## Linear model
 ```{r}
 diatoms_lm <- lm(y ~ time, data = diatoms_data)
 
@@ -215,7 +215,7 @@ ggplot(diatoms_data, aes(x = time, y = y)) +
   theme_minimal()
 ```
 
-GAM
+## GAM
 ```{r}
 # model
 diatoms_gam <- gam(y ~ s(time, bs = "cs", k = 50), data = diatoms_data)
@@ -224,10 +224,11 @@ diatoms_gam <- gam(y ~ s(time, bs = "cs", k = 50), data = diatoms_data)
 gratia::draw(diatoms_gam)
 
 ```
-
+## Hierarchies in data
 ```{r}
 
+head(plankton_data)
 
-
+# mettre l'accent sur la colonne series
 ```
 
