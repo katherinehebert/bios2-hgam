@@ -141,3 +141,11 @@ ggplot(data = plankton_data, aes(x = time)) +
 ```
 
 ------------------------------------------------------------------------
+
+# Part 1: Hierachical Generalized Additive Models (HGAMs)
+
+------------------------------------------------------------------------
+
+# Part 2: Dynamic Generalized Additive Models (DGAMs)
+
+------------------------------------------------------------------------
