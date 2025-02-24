@@ -96,7 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#about-the-data-set" id="toc-about-the-data-set" class="nav-link" data-scroll-target="#about-the-data-set">About the data set</a>
   <ul class="collapse">
-  <li><a href="#data-file-setup-and-download" id="toc-data-file-setup-and-download" class="nav-link" data-scroll-target="#data-file-setup-and-download">Data file setup and download</a></li>
+  <li><a href="#data-download" id="toc-data-download" class="nav-link" data-scroll-target="#data-download">Data download</a></li>
   <li><a href="#prepare-the-data" id="toc-prepare-the-data" class="nav-link" data-scroll-target="#prepare-the-data">Prepare the data</a></li>
   </ul></li>
   <li><a href="#part-1-hierarchical-generalized-additive-models-hgams" id="toc-part-1-hierarchical-generalized-additive-models-hgams" class="nav-link" data-scroll-target="#part-1-hierarchical-generalized-additive-models-hgams">Part 1: Hierarchical Generalized Additive Models (HGAMs)</a></li>
@@ -227,10 +227,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 data-number="2"><span class="header-section-number">2</span> Workshop materials</h1>
 <section id="about-the-data-set" class="level2">
 <h2 class="anchored" data-anchor-id="about-the-data-set">About the data set</h2>
-<p>In this workshop, we will be analyzing time series of rodent captures from the <a href="https://portal.weecology.org/">Portal Project</a>. This is a long-term monitoring study near Portal, Arizona, which has been running since the 1970s. Sampling follows the lunar monthly cycle, meaning observations are made every 28 days or so. The captures are done with a standardized set of baited traps in 24 experimental plots.</p>
-<p>The Portal Project data is openly available in real time. This makes the dataset an incredible resource for learning about time series analyses, as well as for monitoring biodiversity. The <code>mvgam</code> package has a version of this data (which can be accessed by loading <code>mvgam</code> and running the command <code>data("portal_data")</code>) which has already been processed and formatted into a simple and more usable form. We will be using these data for this workshop.</p>
-<section id="data-file-setup-and-download" class="level3">
-<h3 class="anchored" data-anchor-id="data-file-setup-and-download">Data file setup and download</h3>
+<p>In this workshop, we will be analyzing time series of plankton counts (cells per mL) taken from Lake Washington in Washington, USA during a long-term monitoring study. The data are available in the <code>MARSS</code> package, and are described and analyse in greater detail in this publication:</p>
+<blockquote class="blockquote">
+<p>Hampton Stephanie E. , Scheuerell Mark D. , Schindler Daniel E. , (2006), Coalescence in the Lake Washington story: Interaction strengths in a planktonic food web, <em>Limnology and Oceanography</em>, 51, doi: <a href="https://aslopubs.onlinelibrary.wiley.com/doi/abs/10.4319/lo.2006.51.5.2042">10.4319/lo.2006.51.5.2042</a>.</p>
+</blockquote>
+<p>Some information about the data, from the <code>MARSS</code> package documentation (<a href="https://atsa-es.github.io/MARSS/reference/plankton.html">link</a>):</p>
+<blockquote class="blockquote">
+<p>The <code>lakeWAplankton</code> data set consists for two data sets: <code>lakeWAplanktonRaw</code> and a dataset derived from the raw dataset, <code>lakeWAplanktonTrans</code>. <code>lakeWAplanktonRaw</code> is a <strong>32-year time series (1962-1994)</strong> <strong>of monthly plankton counts</strong> from Lake Washington, Washington, USA. Columns 1 and 2 are year and month. Column 3 is temperature (C), column 4 is total phosphorous, and column 5 is pH. The next columns are the plankton counts in units of cells per mL for the phytoplankton and organisms per L for the zooplankton.</p>
+<p><code>lakeWAplanktonTrans</code> is a transformed version of <code>lakeWAplanktonRaw</code>. Zeros have been replaced with NAs (missing). The logged (natural log) raw plankton counts have been standardized to a mean of zero and variance of 1 (so logged and then z-scored). Temperature, TP &amp; pH were also z-scored but not logged (so z-score of the untransformed values for these covariates). The single missing temperature value was replaced with -1 and the single missing TP value was replaced with -0.3.</p>
+</blockquote>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://www.google.com/url?sa=i&amp;url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3ALake_Washington_region.png&amp;psig=AOvVaw3-T1CwR0iIWfiMD1B0WiFK&amp;ust=1740498251184000&amp;source=images&amp;cd=vfe&amp;opi=89978449&amp;ved=0CBQQjRxqFwoTCKjh87LT3IsDFQAAAAAdAAAAABAJ"><img src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Lake_Washington_region.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
+</figure>
+</div>
+<p>The data download and preparation steps are identical to the <a href="https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia#Lake_Washington_plankton_data">steps in Nicholas J. Clark’s Physalia course</a>.</p>
+<section id="data-download" class="level3">
+<h3 class="anchored" data-anchor-id="data-download">Data download</h3>
 <p>Load the dataset:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="fu">url</span>(<span class="st">'https://github.com/atsa-es/MARSS/raw/master/data/lakeWAplankton.rda'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -322,7 +335,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="hgam-part1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="hgam-part1_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -332,6 +345,76 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="part-1-hierarchical-generalized-additive-models-hgams" class="level2">
 <h2 class="anchored" data-anchor-id="part-1-hierarchical-generalized-additive-models-hgams">Part 1: Hierarchical Generalized Additive Models (HGAMs)</h2>
+<p>Diatoms data set. *I want to illustrate nonlinearity for juste one series.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># subset</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>diatoms_data <span class="ot">&lt;-</span> plankton_data[plankton_data<span class="sc">$</span>series <span class="sc">==</span> <span class="st">"Diatoms"</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Data points.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(diatoms_data, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> y), <span class="at">lwd =</span> .<span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Diatoms Data Points"</span>, <span class="at">x =</span> <span class="st">"Year"</span>, <span class="at">y =</span> <span class="st">"Y Value"</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hgam-part1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Linear model</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>diatoms_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> time, <span class="at">data =</span> diatoms_data)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(diatoms_data, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span>  <span class="co"># Scatter points</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">color =</span> <span class="st">"blue1"</span>, <span class="at">fill =</span> <span class="st">"lightgray"</span>, <span class="at">se =</span> <span class="cn">TRUE</span>) <span class="sc">+</span>  <span class="co"># Regression line</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Diatoms Data with Linear Regression Line"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Time"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Y Value"</span>) <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing non-finite outside the scale range
+(`stat_smooth()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hgam-part1_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>GAM</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># model</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>diatoms_gam <span class="ot">&lt;-</span> <span class="fu">gam</span>(y <span class="sc">~</span> <span class="fu">s</span>(time, <span class="at">bs =</span> <span class="st">"cs"</span>, <span class="at">k =</span> <span class="dv">50</span>), <span class="at">data =</span> diatoms_data)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># graph</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>gratia<span class="sc">::</span><span class="fu">draw</span>(diatoms_gam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hgam-part1_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 </section>
 
