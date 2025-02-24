@@ -1,0 +1,143 @@
+---
+title: "Introduction to Hierarchical GAMs"
+subtitle: "by Camille Lévesque & Katherine Hébert"
+format: revealjs
+theme: white
+slide-number: true
+smaller: true
+code-fold: false
+echo: true
+---
+
+## Thanks, BIOS²!
+
+This workshop was developed with support from the NSERC CREATE Computational Biodiversity Science and Services (BIOS²) training program.
+
+![](https://bios2.usherbrooke.ca/wp-content/uploads/2020/12/cropped-Bios2_ENG_court.png){fig-align="center"}
+
+------------------------------------------------------------------------
+
+## Overview
+
+This course is designed to demystify hierarchical modelling as powerful tools to model population dynamics, spatial distributions, and any non-linear relationships in your ecological data. The training will be divided into two blocks.
+
+-   First, we will cover hierarchies in biology, data, and in models to understand what hierarchical models are, some of the forms they can take, and the fundamentals of how they work.
+
+-   Second, we will introduce latent variable modelling as a way to explain even more of the variation in our response variables, to better disentangle the hierarchies of variation in our data.
+
+------------------------------------------------------------------------
+
+## Learning outcomes
+
+1.  Understand how a hierarchical model works, and how it can be used to capture nonlinear effects
+
+2.  Understand dynamic modelling, and how latent variables can be used to capture dynamic processes like temporal or spatial autocorrelation
+
+3.  Use the R packages mgcv and mvgam packages to build and fit hierarchical models
+
+4.  Understand how to visualize and interpret hierarchical models with these packages
+
+------------------------------------------------------------------------
+
+## Requirements
+
+-   Familiarity with Generalized Additive Modelling
+
+-   Install R & RStudio
+
+------------------------------------------------------------------------
+
+## Required packages
+
+Install the required packages:
+
+```{r, eval = FALSE, include = TRUE}
+install.packages(pkgs = c("mvgam", 
+                          "mgcv", 
+                          "gratia", 
+                          "marginaleffects", 
+                          "ggplot2"), 
+                 dependencies = TRUE)
+```
+
+Let's now load them, and set the ggplot theme for all plots we make:
+
+```{r, message = FALSE, warning = FALSE}
+library("dplyr")
+library("tidyr")
+library("mvgam")
+library("mgcv")
+library("gratia")
+library("marginaleffects")
+library("ggplot2")
+
+# set ggplot themes for the whole tutorial
+theme_set(theme_minimal())
+```
+
+------------------------------------------------------------------------
+
+## Code
+
+Follow along these slides with the tutorial, available at LINK HERE.
+
+You can also download the model objects and other saved objects to lighten the computation time while following along with this presentation.
+
+------------------------------------------------------------------------
+
+## Data
+
+::: columns
+::: {.column width="50%"}
+In this workshop, we will be analyzing time series of plankton counts (cells per mL) taken from Lake Washington in Washington, USA during a long-term monitoring study. The data are available in the `MARSS` package.
+
+The data download and preparation steps are identical to the [steps in Nicholas J. Clark's Physalia course](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia#Lake_Washington_plankton_data).
+:::
+
+::: {.column width="50%"}
+![](https://upload.wikimedia.org/wikipedia/commons/f/fd/Seattle%2C_Washington_%287377915272%29.jpg){fig-align="right"}
+:::
+:::
+
+------------------------------------------------------------------------
+
+## Data
+
+Load the dataset:
+
+```{r}
+load(url('https://github.com/atsa-es/MARSS/raw/master/data/lakeWAplankton.rda'))
+```
+
+Prepare the data with the code in the tutorial, or load the saved object we prepared with that code:
+
+```{r}
+plankton_data = readRDS("saved-objects/plankton-data.rds")
+```
+
+------------------------------------------------------------------------
+
+## Data
+
+Let's have a look at the data's structure:
+
+```{r}
+head(plankton_data)
+```
+
+------------------------------------------------------------------------
+
+## Data
+
+Let's also plot the data to get a first look at the time series:
+
+```{r}
+ggplot(data = plankton_data, aes(x = time)) +
+  geom_line(aes(y = temp), col = "black") + # Temperature in black
+  geom_line(aes(y = y, col = series), lwd = .4) + # Taxa counts in color
+  labs(x = "Time", 
+       y = "Abundance (z-score)\n(Temperature z-score in black)", 
+       col = "Group")
+```
+
+------------------------------------------------------------------------
