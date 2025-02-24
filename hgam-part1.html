@@ -85,6 +85,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a>
   <ul class="collapse">
+  <li><a href="#credits" id="toc-credits" class="nav-link" data-scroll-target="#credits">Credits</a></li>
   <li><a href="#learning-outcomes" id="toc-learning-outcomes" class="nav-link" data-scroll-target="#learning-outcomes">Learning outcomes</a></li>
   <li><a href="#requirements" id="toc-requirements" class="nav-link" data-scroll-target="#requirements">Requirements</a>
   <ul class="collapse">
@@ -96,11 +97,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#about-the-data-set" id="toc-about-the-data-set" class="nav-link" data-scroll-target="#about-the-data-set">About the data set</a>
   <ul class="collapse">
   <li><a href="#data-file-setup-and-download" id="toc-data-file-setup-and-download" class="nav-link" data-scroll-target="#data-file-setup-and-download">Data file setup and download</a></li>
-  </ul></li>
-  <li><a href="#part-1-hierarchical-generalized-additive-models-hgams" id="toc-part-1-hierarchical-generalized-additive-models-hgams" class="nav-link" data-scroll-target="#part-1-hierarchical-generalized-additive-models-hgams">Part 1: Hierarchical Generalized Additive Models (HGAMs)</a>
-  <ul class="collapse">
   <li><a href="#prepare-the-data" id="toc-prepare-the-data" class="nav-link" data-scroll-target="#prepare-the-data">Prepare the data</a></li>
   </ul></li>
+  <li><a href="#part-1-hierarchical-generalized-additive-models-hgams" id="toc-part-1-hierarchical-generalized-additive-models-hgams" class="nav-link" data-scroll-target="#part-1-hierarchical-generalized-additive-models-hgams">Part 1: Hierarchical Generalized Additive Models (HGAMs)</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -171,6 +170,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>Both blocks will include a theoretical presentation followed by hands-on coding exercises to implement and interpret hierarchical GAMs.</p>
 <p>This workshop was developed with support from the <a href="https://bios2.usherbrooke.ca/">NSERC CREATE Computational Biodiversity Science and Services (BIOS²)</a> training program.</p>
+<section id="credits" class="level2">
+<h2 class="anchored" data-anchor-id="credits">Credits</h2>
+<p>This workshop is based on Nicholas J. Clark’s Physalia course “Ecological forecasting with <code>mvgam</code> and <code>brms</code>”. It was reworked by Katherine Hébert and Camille Lévesque into this short tutorial (mainly in Part 2), but we recommend having a look at the original for a more in-depth look at the methods we are covering today:</p>
+<blockquote class="blockquote">
+<p>Clark, N. J. (2024). “Ecological forecasting with <code>mvgam</code> and <code>brms</code>”. Physalia. Retrieved from <a href="https://nicholasjclark.github.io/physalia-forecasting-course/" class="uri">https://nicholasjclark.github.io/physalia-forecasting-course/</a>.</p>
+</blockquote>
+</section>
 <section id="learning-outcomes" class="level2">
 <h2 class="anchored" data-anchor-id="learning-outcomes">Learning outcomes</h2>
 <ol type="1">
@@ -204,7 +210,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"mgcv"</span>)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"gratia"</span>)</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"marginaleffects"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"ggplot2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"ggplot2"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># set all ggplots to this theme</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="stan" class="level3">
@@ -218,24 +227,102 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 data-number="2"><span class="header-section-number">2</span> Workshop materials</h1>
 <section id="about-the-data-set" class="level2">
 <h2 class="anchored" data-anchor-id="about-the-data-set">About the data set</h2>
-<p>In this workshop, we will be analyzing time series of a groundfish community in the Northwest Atlantic Newfoundland Shelf from 1980 to 2013. These data are published the article:</p>
-<p>Pedersen Eric J., et al.&nbsp;(2017). Signatures of the collapse and incipient recovery of an overexploited marine ecosystem. <em>Proc. R. Soc. Open Sci.</em> 4170215. <a href="http://doi.org/10.1098/rsos.170215" class="uri">http://doi.org/10.1098/rsos.170215</a></p>
-<p>For this workshop, we will work with a subset of 10 of the 30 species included in the article: <em>Anarhichas denticulatus, Gadus morhua, Glyptocephalus cynoglossus, Hippoglossoides platessoides, Raja spinicauda, Raja radiata, Raja senta, Reinhardtius hippoglossoides, Sebastes marinus, Sebastes mentella.</em></p>
+<p>In this workshop, we will be analyzing time series of rodent captures from the <a href="https://portal.weecology.org/">Portal Project</a>. This is a long-term monitoring study near Portal, Arizona, which has been running since the 1970s. Sampling follows the lunar monthly cycle, meaning observations are made every 28 days or so. The captures are done with a standardized set of baited traps in 24 experimental plots.</p>
+<p>The Portal Project data is openly available in real time. This makes the dataset an incredible resource for learning about time series analyses, as well as for monitoring biodiversity. The <code>mvgam</code> package has a version of this data (which can be accessed by loading <code>mvgam</code> and running the command <code>data("portal_data")</code>) which has already been processed and formatted into a simple and more usable form. We will be using these data for this workshop.</p>
 <section id="data-file-setup-and-download" class="level3">
 <h3 class="anchored" data-anchor-id="data-file-setup-and-download">Data file setup and download</h3>
-<p>Load the prepared dataset:</p>
+<p>Load the dataset:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">=</span> <span class="fu">readRDS</span>(<span class="at">file =</span> <span class="st">"data/fish-community.rds"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>years <span class="ot">=</span> <span class="fu">rownames</span>(dat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="fu">url</span>(<span class="st">'https://github.com/atsa-es/MARSS/raw/master/data/lakeWAplankton.rda'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Plot the data to get a first look at how species’ biomasses changed through time:</p>
+</section>
+<section id="prepare-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-the-data">Prepare the data</h3>
+<p>First, the data needs to be prepared into a long format (i.e., one observation per row). In Part 2, the <code>mvgam</code> package will require specific column names, so we will prepare the data to match the package’s requirements.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">matplot</span>(dat, <span class="at">type=</span><span class="st">"l"</span>, <span class="at">lty =</span> <span class="dv">1</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="fu">rainbow</span>(<span class="at">n =</span> <span class="dv">10</span>,<span class="at">v =</span> .<span class="dv">8</span>),</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">ylab =</span> <span class="st">"Biomass"</span>, <span class="at">x =</span> years)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Prepare the time series data for analysis </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This code is from https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># We will work with five different groups of plankton:</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>outcomes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">'Greens'</span>, <span class="st">'Bluegreens'</span>, <span class="st">'Diatoms'</span>, <span class="st">'Unicells'</span>, <span class="st">'Other.algae'</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>plankton_data <span class="ot">&lt;-</span> xfun<span class="sc">::</span><span class="fu">cache_rds</span>(<span class="fu">do.call</span>(rbind, <span class="fu">lapply</span>(outcomes, <span class="cf">function</span>(x){</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create a group-specific dataframe with counts labelled 'y'</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># and the group name in the 'series' variable</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">year =</span> lakeWAplanktonTrans[, <span class="st">'Year'</span>],</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">month =</span> lakeWAplanktonTrans[, <span class="st">'Month'</span>],</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> lakeWAplanktonTrans[, x],</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">series =</span> x,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">temp =</span> lakeWAplanktonTrans[, <span class="st">'Temp'</span>])})) <span class="sc">%&gt;%</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># change the 'series' label to a factor</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">series =</span> <span class="fu">factor</span>(series)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter to only include some years in the data</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">1965</span> <span class="sc">&amp;</span> year <span class="sc">&lt;</span> <span class="dv">1975</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(year, month) <span class="sc">%&gt;%</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(series) <span class="sc">%&gt;%</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># z-score the counts so they are approximately standard normal</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">as.vector</span>(<span class="fu">scale</span>(y))) <span class="sc">%&gt;%</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add the time indicator</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">time =</span> dplyr<span class="sc">::</span><span class="fu">row_number</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">ungroup</span>())</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co"># loop across each plankton group to create the long datframe</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>plankton_data <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">lapply</span>(outcomes, <span class="cf">function</span>(x){</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create a group-specific dataframe with counts labelled 'y'</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># and the group name in the 'series' variable</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">year =</span> lakeWAplanktonTrans[, <span class="st">'Year'</span>],</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>             <span class="at">month =</span> lakeWAplanktonTrans[, <span class="st">'Month'</span>],</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> lakeWAplanktonTrans[, x],</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>             <span class="at">series =</span> x,</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>             <span class="at">temp =</span> lakeWAplanktonTrans[, <span class="st">'Temp'</span>])})) <span class="sc">%&gt;%</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># change the 'series' label to a factor</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">series =</span> <span class="fu">factor</span>(series)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter to only include some years in the data</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">1965</span> <span class="sc">&amp;</span> year <span class="sc">&lt;</span> <span class="dv">1975</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(year, month) <span class="sc">%&gt;%</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(series) <span class="sc">%&gt;%</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>  <span class="co"># z-score the counts so they are approximately standard normal</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">as.vector</span>(<span class="fu">scale</span>(y))) <span class="sc">%&gt;%</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add the time index</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">time =</span> dplyr<span class="sc">::</span><span class="fu">row_number</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s have a look at the data’s structure:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(plankton_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 6
+   year month       y series       temp  time
+  &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;fct&gt;       &lt;dbl&gt; &lt;int&gt;
+1  1965     1 -0.542  Greens      -1.23     1
+2  1965     1 -0.344  Bluegreens  -1.23     1
+3  1965     1 -0.0768 Diatoms     -1.23     1
+4  1965     1 -1.52   Unicells    -1.23     1
+5  1965     1 -0.491  Other.algae -1.23     1
+6  1965     2 NA      Greens      -1.32     2</code></pre>
+</div>
+</div>
+<p>Let’s also plot the data to get a first look at the time series:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> plankton_data, <span class="fu">aes</span>(<span class="at">x =</span> time)) <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> temp), <span class="at">col =</span> <span class="st">"black"</span>) <span class="sc">+</span> <span class="co"># Temperature in black</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> y, <span class="at">col =</span> series), <span class="at">lwd =</span> .<span class="dv">4</span>) <span class="sc">+</span> <span class="co"># Taxa counts in color</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Time"</span>, <span class="at">y =</span> <span class="st">"Abundance (z-score)</span><span class="sc">\n</span><span class="st">(Temperature z-score in black)"</span>, <span class="at">col =</span> <span class="st">"Group"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="hgam-part1_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="hgam-part1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -245,62 +332,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="part-1-hierarchical-generalized-additive-models-hgams" class="level2">
 <h2 class="anchored" data-anchor-id="part-1-hierarchical-generalized-additive-models-hgams">Part 1: Hierarchical Generalized Additive Models (HGAMs)</h2>
-<section id="prepare-the-data" class="level3">
-<h3 class="anchored" data-anchor-id="prepare-the-data">Prepare the data</h3>
-<p>First, the data needs to be prepared into a long format (i.e., one observation per row). Later (in Part 2), the <code>mvgam</code> package will require specific column names, so we will prepare the data to match the package’s requirements.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat_l <span class="ot">=</span> dat <span class="sc">|&gt;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># First, we need a "time" column to index the observations at each time step</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"time"</span> <span class="ot">=</span> <span class="fu">as.numeric</span>(years)) <span class="sc">|&gt;</span> <span class="co"># make a new column with year values</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to long format</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">-</span>time, <span class="co"># only apply to species' biomass columns</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>               </span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>               <span class="co"># Next, we need a "series" column that can be indexed to pick each time series</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>               <span class="co"># In this case, it is species names because we have 1 time series per species</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"series"</span>, <span class="co"># move species names into a "series" column</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>               </span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>               <span class="co"># Finally, the response variable (what we measured) should be in</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>               <span class="co"># a "y" column</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"y"</span>) <span class="co"># move biomass values into a "y" column </span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>dat_l<span class="sc">$</span>series <span class="ot">=</span> <span class="fu">factor</span>(dat_l<span class="sc">$</span>series)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>[stuff]</p>
-<p>Finding the number of knots</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's start with 1 knot every 4 years</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>knots <span class="ot">=</span> <span class="fu">ceiling</span>(<span class="fu">length</span>(years)<span class="sc">/</span><span class="dv">4</span>) </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>npops <span class="ot">=</span> <span class="fu">levels</span>(dat_l<span class="sc">$</span>series) <span class="sc">|&gt;</span> <span class="fu">length</span>()</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>kcheck_gam <span class="ot">=</span> mgcv<span class="sc">::</span><span class="fu">gam</span>(y <span class="sc">~</span> <span class="fu">s</span>(time, <span class="at">bs =</span> <span class="st">"tp"</span>, <span class="at">k =</span> knots) <span class="sc">+</span> </span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">s</span>(series, <span class="at">bs =</span> <span class="st">'re'</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">data =</span> dat_l)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>mgcv<span class="sc">::</span><span class="fu">gam.check</span>(kcheck_gam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="hgam-part1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Method: GCV   Optimizer: magic
-Smoothing parameter selection converged after 8 iterations.
-The RMS GCV score gradient at convergence was 3.773966e-06 .
-The Hessian was positive definite.
-Model rank =  19 / 19 
-
-Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
-indicate that k is too low, especially if edf is close to k'.
-
-             k'   edf k-index p-value
-s(time)    8.00  3.61    1.07    0.91
-s(series) 10.00  8.61      NA      NA</code></pre>
-</div>
-</div>
-</section>
 </section>
 </section>
 

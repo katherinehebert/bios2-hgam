@@ -28,6 +28,12 @@ Both blocks will include a theoretical presentation followed by hands-on coding 
 
 This workshop was developed with support from the [NSERC CREATE Computational Biodiversity Science and Services (BIOS²)](https://bios2.usherbrooke.ca/) training program.
 
+## Credits
+
+This workshop is based on Nicholas J. Clark's Physalia course "Ecological forecasting with `mvgam` and `brms`". It was reworked by Katherine Hébert and Camille Lévesque into this short tutorial (mainly in Part 2), but we recommend having a look at the original for a more in-depth look at the methods we are covering today:
+
+> Clark, N. J. (2024). "Ecological forecasting with `mvgam` and `brms`". Physalia. Retrieved from <https://nicholasjclark.github.io/physalia-forecasting-course/>.
+
 ## Learning outcomes
 
 1.  Understand how a hierarchical model works, and how it can be used to capture nonlinear effects
@@ -65,6 +71,9 @@ library("mgcv")
 library("gratia")
 library("marginaleffects")
 library("ggplot2")
+
+# set all ggplots to this theme
+theme_set(theme_minimal())
 ```
 
 ### Stan
@@ -77,66 +86,99 @@ Please note that for Block 2, we will be fitting models using `Stan`. `Stan` mus
 
 ## About the data set
 
-In this workshop, we will be analyzing time series of a groundfish community in the Northwest Atlantic Newfoundland Shelf from 1980 to 2013. These data are published the article:
+In this workshop, we will be analyzing time series of plankton counts (cells per mL) taken from Lake Washington in Washington, USA during a long-term monitoring study. The data are available in the `MARSS` package.
 
-Pedersen Eric J., et al. (2017). Signatures of the collapse and incipient recovery of an overexploited marine ecosystem. *Proc. R. Soc. Open Sci.* 4170215. <http://doi.org/10.1098/rsos.170215>
+[![](https://upload.wikimedia.org/wikipedia/commons/e/ec/Lake_Washington_region.png){fig-align="center"}](https://www.google.com/url?sa=i&url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3ALake_Washington_region.png&psig=AOvVaw3-T1CwR0iIWfiMD1B0WiFK&ust=1740498251184000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKjh87LT3IsDFQAAAAAdAAAAABAJ)
 
-For this workshop, we will work with a subset of 10 of the 30 species included in the article: *Anarhichas denticulatus, Gadus morhua, Glyptocephalus cynoglossus, Hippoglossoides platessoides, Raja spinicauda, Raja radiata, Raja senta, Reinhardtius hippoglossoides, Sebastes marinus, Sebastes mentella.*
+The data download and preparation steps are identical to the [steps in Nicholas J. Clark's Physalia course](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia#Lake_Washington_plankton_data).
 
-### Data file setup and download
+### Data download
 
-Load the prepared dataset:
+Load the dataset:
 
 ```{r}
-dat = readRDS(file = "data/fish-community.rds")
-years = rownames(dat)
+load(url('https://github.com/atsa-es/MARSS/raw/master/data/lakeWAplankton.rda'))
 ```
 
-Plot the data to get a first look at how species' biomasses changed through time:
+### Prepare the data
+
+First, the data needs to be prepared into a long format (i.e., one observation per row). In Part 2, the `mvgam` package will require specific column names, so we will prepare the data to match the package's requirements.
 
 ```{r}
-matplot(dat, type="l", lty = 1, lwd = 2, col = rainbow(n = 10,v = .8),
-        ylab = "Biomass", x = years)
+## Prepare the time series data for analysis 
+
+# This code is from https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia
+
+# We will work with five different groups of plankton:
+outcomes <- c('Greens', 'Bluegreens', 'Diatoms', 'Unicells', 'Other.algae')
+
+plankton_data <- xfun::cache_rds(do.call(rbind, lapply(outcomes, function(x){
+  
+  # create a group-specific dataframe with counts labelled 'y'
+  # and the group name in the 'series' variable
+  data.frame(year = lakeWAplanktonTrans[, 'Year'],
+             month = lakeWAplanktonTrans[, 'Month'],
+             y = lakeWAplanktonTrans[, x],
+             series = x,
+             temp = lakeWAplanktonTrans[, 'Temp'])})) %>%
+  
+  # change the 'series' label to a factor
+  dplyr::mutate(series = factor(series)) %>%
+  
+  # filter to only include some years in the data
+  dplyr::filter(year >= 1965 & year < 1975) %>%
+  dplyr::arrange(year, month) %>%
+  dplyr::group_by(series) %>%
+  
+  # z-score the counts so they are approximately standard normal
+  dplyr::mutate(y = as.vector(scale(y))) %>%
+  
+  # add the time indicator
+  dplyr::mutate(time = dplyr::row_number()) %>%
+  dplyr::ungroup())
+
+# loop across each plankton group to create the long datframe
+plankton_data <- do.call(rbind, lapply(outcomes, function(x){
+  
+  # create a group-specific dataframe with counts labelled 'y'
+  # and the group name in the 'series' variable
+  data.frame(year = lakeWAplanktonTrans[, 'Year'],
+             month = lakeWAplanktonTrans[, 'Month'],
+             y = lakeWAplanktonTrans[, x],
+             series = x,
+             temp = lakeWAplanktonTrans[, 'Temp'])})) %>%
+  
+  # change the 'series' label to a factor
+  dplyr::mutate(series = factor(series)) %>%
+  
+  # filter to only include some years in the data
+  dplyr::filter(year >= 1965 & year < 1975) %>%
+  dplyr::arrange(year, month) %>%
+  dplyr::group_by(series) %>%
+  
+  # z-score the counts so they are approximately standard normal
+  dplyr::mutate(y = as.vector(scale(y))) %>%
+  
+  # add the time index
+  dplyr::mutate(time = dplyr::row_number()) %>%
+  dplyr::ungroup()
+```
+
+Let's have a look at the data's structure:
+
+```{r}
+head(plankton_data)
+```
+
+Let's also plot the data to get a first look at the time series:
+
+```{r}
+ggplot(data = plankton_data, aes(x = time)) +
+  geom_line(aes(y = temp), col = "black") + # Temperature in black
+  geom_line(aes(y = y, col = series), lwd = .4) + # Taxa counts in color
+  labs(x = "Time", y = "Abundance (z-score)\n(Temperature z-score in black)", col = "Group")
 ```
 
 ------------------------------------------------------------------------
 
 ## Part 1: Hierarchical Generalized Additive Models (HGAMs)
-
-### Prepare the data
-
-First, the data needs to be prepared into a long format (i.e., one observation per row). Later (in Part 2), the `mvgam` package will require specific column names, so we will prepare the data to match the package's requirements.
-
-```{r}
-dat_l = dat |>
-  
-  # First, we need a "time" column to index the observations at each time step
-  mutate("time" = as.numeric(years)) |> # make a new column with year values
-  
-  # Convert to long format
-  pivot_longer(cols = -time, # only apply to species' biomass columns
-               
-               # Next, we need a "series" column that can be indexed to pick each time series
-               # In this case, it is species names because we have 1 time series per species
-               names_to = "series", # move species names into a "series" column
-               
-               # Finally, the response variable (what we measured) should be in
-               # a "y" column
-               values_to = "y") # move biomass values into a "y" column 
-
-dat_l$series = factor(dat_l$series)
-```
-
-\[stuff\]
-
-Finding the number of knots
-
-```{r}
-# let's start with 1 knot every 4 years
-knots = ceiling(length(years)/4) 
-npops = levels(dat_l$series) |> length()
-kcheck_gam = mgcv::gam(y ~ s(time, bs = "tp", k = knots) + 
-                           s(series, bs = 're'),
-                       data = dat_l)
-mgcv::gam.check(kcheck_gam)
-```
