@@ -164,6 +164,10 @@ plankton_data <- do.call(rbind, lapply(outcomes, function(x){
   dplyr::ungroup()
 ```
 
+```{r, echo = F}
+saveRDS(plankton_data, here::here("saved-objects/plankton-data.rds"))
+```
+
 Let's have a look at the data's structure:
 
 ```{r}
