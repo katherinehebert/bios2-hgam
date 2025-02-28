@@ -130,9 +130,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="build-a-hierarchical-model-with-mvgam" class="level3">
 <h3 class="anchored" data-anchor-id="build-a-hierarchical-model-with-mvgam">Build a hierarchical model with <code>mvgam</code></h3>
-<p>First, load the <code>mvgam</code> package:</p>
+<p>First, load the <code>mvgam</code> package and the <code>marginaleffects</code> package that we will be using to visualize the model:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mvgam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mvgam)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(marginaleffects)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Our model is an attempt to estimate how plankton vary in abundance through time. Let’s consider what we know about the system, to help us build this model:</p>
 <ol type="1">
@@ -148,7 +149,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>plankton_test <span class="ot">&lt;-</span> plankton_data <span class="sc">%&gt;%</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(time <span class="sc">&gt;</span> <span class="dv">112</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Next, we’ll build a hierarchical GAM with a global smoother for all groups, and species-specific smooths in <code>mvgam</code>. This will allow us to capture the “global” seasonality that drives all plankton groups to fluctuate similarly through the time series, and to capture how each group’s seasonal fluctuations differ from this overall, global trend. Here, we will not include an intercept, because we converted our response variables into z-scores with a mean of 0 (so, our intercept is 0):</p>
+<section id="specify-the-model" class="level4">
+<h4 class="anchored" data-anchor-id="specify-the-model">Specify the model</h4>
+<p>Next, we’ll build a hierarchical GAM with a global smoother for all groups, and species-specific smooths in <code>mvgam</code>.</p>
+<p>This will allow us to capture the “global” seasonality that drives all plankton groups to fluctuate similarly through the time series, and to capture how each group’s seasonal fluctuations differ from this overall, global trend.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>notrend_mod <span class="ot">&lt;-</span> <span class="fu">mvgam</span>(<span class="at">formula =</span> </span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                       y <span class="sc">~</span> </span>
@@ -308,24 +312,24 @@ Total post-warmup draws = 2000
 
 Observation error parameter estimates:
              2.5%  50% 97.5% Rhat n_eff
-sigma_obs[1] 0.76 0.87  1.00    1  2233
-sigma_obs[2] 0.58 0.66  0.77    1  3039
-sigma_obs[3] 0.81 0.92  1.10    1  2971
-sigma_obs[4] 0.66 0.75  0.87    1  2617
-sigma_obs[5] 0.64 0.72  0.85    1  2947
+sigma_obs[1] 0.76 0.87  1.00    1  2620
+sigma_obs[2] 0.58 0.66  0.76    1  2721
+sigma_obs[3] 0.80 0.92  1.10    1  2954
+sigma_obs[4] 0.66 0.75  0.87    1  2969
+sigma_obs[5] 0.63 0.73  0.85    1  2457
 
 GAM coefficient (beta) estimates:
              2.5%    50% 97.5% Rhat n_eff
-(Intercept) -0.11 -0.042 0.025    1  3663
+(Intercept) -0.11 -0.044 0.023    1  2869
 
 Approximate significance of GAM smooths:
-                                  edf Ref.df Chi.sq p-value  
-te(temp,month)                   4.14     15  62.84   0.044 *
-te(temp,month):seriesBluegreens  1.75     15   5.90   0.999  
-te(temp,month):seriesDiatoms     4.24     15  62.31   0.066 .
-te(temp,month):seriesGreens      1.65     15   1.91   1.000  
-te(temp,month):seriesOther.algae 2.37     15   2.68   1.000  
-te(temp,month):seriesUnicells    2.64     15   7.16   0.995  
+                                  edf Ref.df Chi.sq p-value    
+te(temp,month)                   5.76     15  52.31 2.4e-05 ***
+te(temp,month):seriesBluegreens  2.86     15   3.98    1.00    
+te(temp,month):seriesDiatoms     3.34     15  56.02    0.11    
+te(temp,month):seriesGreens      2.69     15   1.01    1.00    
+te(temp,month):seriesOther.algae 1.34     15   2.83    1.00    
+te(temp,month):seriesUnicells    2.49     15   6.47    0.99    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -336,7 +340,7 @@ Rhat looks reasonable for all parameters
 0 of 2000 iterations saturated the maximum tree depth of 10 (0%)
 E-FMI indicated no pathological behavior
 
-Samples were drawn using NUTS(diag_e) at Mon Feb 24 11:12:03 2025.
+Samples were drawn using NUTS(diag_e) at Mon Feb 24 15:41:29 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split MCMC chains
 (at convergence, Rhat = 1)
@@ -344,6 +348,7 @@ and Rhat is the potential scale reduction factor on split MCMC chains
 Use how_to_cite(notrend_mod) to get started describing this model</code></pre>
 </div>
 </div>
+</section>
 <section id="visualise-the-model" class="level4">
 <h4 class="anchored" data-anchor-id="visualise-the-model">Visualise the model</h4>
 <p>Let’s first plot the global smoother for all species over time:</p>
@@ -377,23 +382,23 @@ Use how_to_cite(notrend_mod) to get started describing this model</code></pre>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) <span class="fu">plot</span>(notrend_mod, <span class="at">type =</span> <span class="st">'forecast'</span>, <span class="at">series =</span> x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Out of sample CRPS:
-6.70794775833261</code></pre>
+6.76106172887687</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Out of sample CRPS:
-6.76782336783315</code></pre>
+6.74284136216226</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Out of sample CRPS:
-4.1401566108237</code></pre>
+4.14878078336935</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Out of sample CRPS:
-3.55841683842791</code></pre>
+3.52581136668436</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Out of sample CRPS:
-2.85111418308862</code></pre>
+2.83716936348026</code></pre>
 </div>
 <div class="cell quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
@@ -467,7 +472,7 @@ Use how_to_cite(notrend_mod) to get started describing this model</code></pre>
 <p>Let’s assume there are latent trends that have some built-in temporal autocorrelation: each observation is closer to its neighbours in time than it is to observations that are several time steps away. In other words, N at time 1 is closer to N at time 2 than it is to N at time 100. This means we will estimate our latent trends using an autoregressive function of order 1 (1 time step), which you may recognize as an AR1 function.</p>
 <p>In <code>mvgam</code>, we can specify this as <code>AR(p = 1)</code> where <code>p = 1</code> sets the order of the autoregressive function (this can be set to a maximum order of 3).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df_mod <span class="ot">&lt;-</span> <span class="fu">mvgam</span>(<span class="at">formula=</span>  </span>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ar1trend_mod <span class="ot">&lt;-</span> <span class="fu">mvgam</span>(<span class="at">formula=</span>  </span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                  y <span class="sc">~</span> </span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">te</span>(temp, month, <span class="at">k =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>)) <span class="sc">+</span></span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">te</span>(temp, month, <span class="at">k =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>), <span class="at">by =</span> series),</span>
@@ -491,7 +496,7 @@ Use how_to_cite(notrend_mod) to get started describing this model</code></pre>
 <h4 class="anchored" data-anchor-id="visualise-the-model-1">Visualise the model</h4>
 <p>Plot the global smoother for all species over time:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_mvgam_smooth</span>(df_mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_mvgam_smooth</span>(ar1trend_mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -502,7 +507,7 @@ Use how_to_cite(notrend_mod) to get started describing this model</code></pre>
 </div>
 <p>This is the shared temporal trend estimated across all species at once. We can see that, overall, species’ biomassess declined during this time period.</p>
 <p>Plot the species’ estimated trends:</p>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) <span class="fu">plot_mvgam_trend</span>(df_mod, <span class="at">series =</span> x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) <span class="fu">plot_mvgam_trend</span>(ar1trend_mod, <span class="at">series =</span> x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
@@ -526,52 +531,23 @@ Use how_to_cite(notrend_mod) to get started describing this model</code></pre>
 </div>
 </div>
 </div>
-<p>We can add each group’s estimated rate of change in abundance through time to these plots . Think of this as the slope of their estimated trend at each time point - this can give us an idea of the rate at which some groups declined or grew during the time series:</p>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) <span class="fu">plot_mvgam_trend</span>(df_mod, <span class="at">series =</span> x, <span class="at">derivatives =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell quarto-layout-panel" data-layout-ncol="2">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<p><img src="hgam-part2_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<p><img src="hgam-part2_files/figure-html/unnamed-chunk-18-2.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<p><img src="hgam-part2_files/figure-html/unnamed-chunk-18-3.png" class="img-fluid" width="672"></p>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<p><img src="hgam-part2_files/figure-html/unnamed-chunk-18-4.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
-<p><img src="hgam-part2_files/figure-html/unnamed-chunk-18-5.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-</div>
-<p>Each group’s derivative trend are pretty centred on the zero line, meaning they were fluctuating around their mean abundance rather than declining or growing in a consistent way through time. However, there are some time periods with larger shifts in abundance which could be investigated further if we wanted to understand how community dynamics may have changed during the time series.</p>
-</section>
-<section id="species-correlations" class="level4">
-<h4 class="anchored" data-anchor-id="species-correlations">Species correlations</h4>
-<p>One way to investigate community dynamics is to check out the correlations between plankton groups. These correlations are captured with the dynamic model, where we introduced AR1 latent trends to estimate unmeasured temporal processes in our data.</p>
-<p>Let’s calculate and plot species’ temporal correlations, and plot them as a heatmap. Red colors show positive correlations and blue colors show negative correlations. The darker the color, the stronger the correlations:</p>
+<section id="partial-effects" class="level5">
+<h5 class="anchored" data-anchor-id="partial-effects">Partial effects</h5>
+<p>We can plot the partial effect of each variable we included in our model, to understand how they contribute to the overall model.</p>
+<p>Let’s start with the partial effect of temperature on plankton counts across groups:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>species_correlations <span class="ot">=</span> <span class="fu">lv_correlations</span>(df_mod)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># prepare the matrix for plotting</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>toplot <span class="ot">=</span> species_correlations<span class="sc">$</span>mean_correlations</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>toplot[<span class="fu">upper.tri</span>(species_correlations<span class="sc">$</span>mean_correlations)] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(toplot) <span class="ot">=</span> <span class="fu">gsub</span>(<span class="st">"_"</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>, stringr<span class="sc">::</span><span class="fu">str_to_sentence</span>(<span class="fu">colnames</span>(toplot)))</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(toplot) <span class="ot">=</span> <span class="fu">gsub</span>(<span class="st">"_"</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>, stringr<span class="sc">::</span><span class="fu">str_to_sentence</span>(<span class="fu">rownames</span>(toplot)))</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="co"># plot as a heatmap</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="fu">heatmap</span>(toplot,</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">Colv =</span> <span class="cn">NA</span>, <span class="at">Rowv =</span> <span class="cn">NA</span>,</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">cexRow =</span> <span class="dv">1</span>, <span class="at">cexCol =</span> <span class="dv">1</span>, <span class="at">symm =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">distfun =</span> <span class="cf">function</span>(c) <span class="fu">as.dist</span>(<span class="dv">1</span> <span class="sc">-</span> c),</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">col =</span> <span class="fu">hcl.colors</span>(<span class="at">n =</span> <span class="dv">12</span>, <span class="at">palette =</span> <span class="st">'Blue-Red'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_predictions</span>(ar1trend_mod, <span class="at">condition =</span> <span class="fu">c</span>(<span class="st">"temp"</span>), <span class="at">conf_level =</span> <span class="fl">0.9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hgam-part2_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Next, the partial effect of seasonality (here, months) on plankton counts across groups:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_predictions</span>(ar1trend_mod, <span class="at">condition =</span> <span class="fu">c</span>(<span class="st">"month"</span>), <span class="at">conf_level =</span> <span class="fl">0.9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -580,7 +556,96 @@ Use how_to_cite(notrend_mod) to get started describing this model</code></pre>
 </div>
 </div>
 </div>
+<p>And finally, the effect of different plankton groups on the model:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_predictions</span>(ar1trend_mod, <span class="at">condition =</span> <span class="fu">c</span>(<span class="st">"series"</span>), <span class="at">conf_level =</span> <span class="fl">0.9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hgam-part2_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
+<section id="calculating-the-rate-of-change-in-plankton-counts" class="level5">
+<h5 class="anchored" data-anchor-id="calculating-the-rate-of-change-in-plankton-counts">Calculating the rate of change in plankton counts</h5>
+<p>We can add each group’s estimated rate of change in abundance through time to these plots . Think of this as the slope of their estimated trend at each time point - this can give us an idea of the rate at which some groups declined or grew during the time series:</p>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) <span class="fu">plot_mvgam_trend</span>(ar1trend_mod, <span class="at">series =</span> x, <span class="at">derivatives =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img src="hgam-part2_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img src="hgam-part2_files/figure-html/unnamed-chunk-21-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img src="hgam-part2_files/figure-html/unnamed-chunk-21-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img src="hgam-part2_files/figure-html/unnamed-chunk-21-4.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img src="hgam-part2_files/figure-html/unnamed-chunk-21-5.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<p>Each group’s derivative trend are pretty centred on the zero line, meaning they were fluctuating around their mean abundance rather than declining or growing in a consistent way through time. However, there are some time periods with larger shifts in abundance which could be investigated further if we wanted to understand how community dynamics may have changed during the time series.</p>
+</section>
+</section>
+<section id="species-correlations" class="level4">
+<h4 class="anchored" data-anchor-id="species-correlations">Species correlations</h4>
+<p>One way to investigate community dynamics is to check out the correlations between plankton groups. These correlations are captured with the dynamic model, where we introduced AR1 latent trends to estimate unmeasured temporal processes in our data.</p>
+<p>Let’s calculate and plot species’ temporal correlations and plot them as a heatmap. Red colors show positive correlations and blue colors show negative correlations. The darker the color, the stronger the correlations:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the correlations from the latent trend model</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>species_correlations <span class="ot">=</span> <span class="fu">lv_correlations</span>(ar1trend_mod)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># prepare the matrix for plotting</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>toplot <span class="ot">=</span> species_correlations<span class="sc">$</span>mean_correlations</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>toplot[<span class="fu">upper.tri</span>(species_correlations<span class="sc">$</span>mean_correlations)] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(toplot) <span class="ot">=</span> <span class="fu">gsub</span>(<span class="st">"_"</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>, stringr<span class="sc">::</span><span class="fu">str_to_sentence</span>(<span class="fu">colnames</span>(toplot)))</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(toplot) <span class="ot">=</span> <span class="fu">gsub</span>(<span class="st">"_"</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>, stringr<span class="sc">::</span><span class="fu">str_to_sentence</span>(<span class="fu">rownames</span>(toplot)))</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="co"># plot as a heatmap</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="fu">heatmap</span>(toplot,</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">Colv =</span> <span class="cn">NA</span>, <span class="at">Rowv =</span> <span class="cn">NA</span>,</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">cexRow =</span> <span class="dv">1</span>, <span class="at">cexCol =</span> <span class="dv">1</span>, <span class="at">symm =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">distfun =</span> <span class="cf">function</span>(c) <span class="fu">as.dist</span>(<span class="dv">1</span> <span class="sc">-</span> c),</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">col =</span> <span class="fu">hcl.colors</span>(<span class="at">n =</span> <span class="dv">12</span>, <span class="at">palette =</span> <span class="st">'Blue-Red'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hgam-part2_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="model-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="model-comparison">Model comparison</h3>
+<p>So, which model is best?</p>
+<p>We will use leave-one-out comparison to compare the two models we just built: <code>notrend_mod</code> which does not have a dynamic trend, and <code>ar1trend</code> which includes an autoregressive latent trend model.</p>
+<p>This workshop isn’t really about model comparison, so we will just use this approach as an example, but there are other ways you could compare these models. metric of comparison will be expected log pointwise predictive density (ELPD)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>mvgam<span class="sc">::</span><span class="fu">loo_compare</span>(notrend_mod, ar1trend_mod,</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">model_names =</span> <span class="fu">c</span>(<span class="st">"No trend"</span>, <span class="st">"AR1 trend"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          elpd_diff se_diff
+AR1 trend    0.0       0.0 
+No trend  -254.7      17.7 </code></pre>
+</div>
+</div>
+<p>The AR1 trend model performs better than the model without a dynamic trend (here, we want high values for elpd_dif)</p>
 </section>
 </section>
 </section>

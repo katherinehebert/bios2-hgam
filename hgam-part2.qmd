@@ -64,10 +64,11 @@ The `mvgam` package has a lot more functionalities (many observation families fo
 
 ### Build a hierarchical model with `mvgam`
 
-First, load the `mvgam` package:
+First, load the `mvgam` package and the `marginaleffects` package that we will be using to visualize the model:
 
 ```{r, message=FALSE}
 library(mvgam)
+library(marginaleffects)
 ```
 
 Our model is an attempt to estimate how plankton vary in abundance through time. Let's consider what we know about the system, to help us build this model:
@@ -93,7 +94,11 @@ plankton_test <- plankton_data %>%
   dplyr::filter(time > 112)
 ```
 
-Next, we'll build a hierarchical GAM with a global smoother for all groups, and species-specific smooths in `mvgam`. This will allow us to capture the "global" seasonality that drives all plankton groups to fluctuate similarly through the time series, and to capture how each group's seasonal fluctuations differ from this overall, global trend. Here, we will not include an intercept, because we converted our response variables into z-scores with a mean of 0 (so, our intercept is 0):
+#### Specify the model
+
+Next, we'll build a hierarchical GAM with a global smoother for all groups, and species-specific smooths in `mvgam`. 
+
+This will allow us to capture the "global" seasonality that drives all plankton groups to fluctuate similarly through the time series, and to capture how each group's seasonal fluctuations differ from this overall, global trend. 
 
 ```{r, cache=TRUE, eval = FALSE}
 notrend_mod <- mvgam(formula = 
@@ -190,7 +195,7 @@ Let's assume there are latent trends that have some built-in temporal autocorrel
 In `mvgam`, we can specify this as `AR(p = 1)` where `p = 1` sets the order of the autoregressive function (this can be set to a maximum order of 3).
 
 ```{r, cache=TRUE, eval = FALSE}
-df_mod <- mvgam(formula=  
+ar1trend_mod <- mvgam(formula=  
                   y ~ 
                   te(temp, month, k = c(4, 4)) +
                   te(temp, month, k = c(4, 4), by = series),
@@ -212,11 +217,11 @@ df_mod <- mvgam(formula=
 ```
 
 ```{r,include=FALSE, eval=FALSE}
-saveRDS(df_mod, here::here("saved-objects/df_mod.rds"))
+saveRDS(ar1trend_mod, here::here("saved-objects/ar1trend_mod.rds"))
 ```
 
 ```{r,include=FALSE, eval=TRUE,cache=TRUE}
-df_mod = readRDS(here::here("saved-objects/df_mod.rds"))
+ar1trend_mod = readRDS(here::here("saved-objects/ar1trend_mod.rds"))
 ```
 
 #### Visualise the model
@@ -224,7 +229,7 @@ df_mod = readRDS(here::here("saved-objects/df_mod.rds"))
 Plot the global smoother for all species over time:
 
 ```{r}
-plot_mvgam_smooth(df_mod)
+plot_mvgam_smooth(ar1trend_mod)
 ```
 
 This is the shared temporal trend estimated across all species at once. We can see that, overall, species' biomassess declined during this time period.
@@ -232,13 +237,38 @@ This is the shared temporal trend estimated across all species at once. We can s
 Plot the species' estimated trends:
 
 ```{r, fig.ncol=2, message=F, warning=F, results = 'hide'}
-sapply(1:5, function(x) plot_mvgam_trend(df_mod, series = x))
+sapply(1:5, function(x) plot_mvgam_trend(ar1trend_mod, series = x))
 ```
+
+##### Partial effects
+
+We can plot the partial effect of each variable we included in our model, to understand how they contribute to the overall model.
+
+Let's start with the partial effect of temperature on plankton counts across groups: 
+
+```{r}
+plot_predictions(ar1trend_mod, condition = c("temp"), conf_level = 0.9)
+```
+
+Next, the partial effect of seasonality (here, months) on plankton counts across groups: 
+
+```{r}
+plot_predictions(ar1trend_mod, condition = c("month"), conf_level = 0.9)
+```
+
+And finally, the effect of different plankton groups on the model:
+
+```{r}
+plot_predictions(ar1trend_mod, condition = c("series"), conf_level = 0.9)
+```
+
+
+##### Calculating the rate of change in plankton counts
 
 We can add each group's estimated rate of change in abundance through time to these plots . Think of this as the slope of their estimated trend at each time point - this can give us an idea of the rate at which some groups declined or grew during the time series:
 
 ```{r, fig.ncol=2, message=F, warning=F, results = 'hide'}
-sapply(1:5, function(x) plot_mvgam_trend(df_mod, series = x, derivatives = TRUE))
+sapply(1:5, function(x) plot_mvgam_trend(ar1trend_mod, series = x, derivatives = TRUE))
 ```
 
 Each group's derivative trend are pretty centred on the zero line, meaning they were fluctuating around their mean abundance rather than declining or growing in a consistent way through time. However, there are some time periods with larger shifts in abundance which could be investigated further if we wanted to understand how community dynamics may have changed during the time series.
@@ -247,10 +277,11 @@ Each group's derivative trend are pretty centred on the zero line, meaning they 
 
 One way to investigate community dynamics is to check out the correlations between plankton groups. These correlations are captured with the dynamic model, where we introduced AR1 latent trends to estimate unmeasured temporal processes in our data.
 
-Let's calculate and plot species' temporal correlations, and plot them as a heatmap. Red colors show positive correlations and blue colors show negative correlations. The darker the color, the stronger the correlations:
+Let's calculate and plot species' temporal correlations and plot them as a heatmap. Red colors show positive correlations and blue colors show negative correlations. The darker the color, the stronger the correlations:
 
 ```{r}
-species_correlations = lv_correlations(df_mod)
+# Calculate the correlations from the latent trend model
+species_correlations = lv_correlations(ar1trend_mod)
 
 # prepare the matrix for plotting
 toplot = species_correlations$mean_correlations
@@ -265,3 +296,18 @@ heatmap(toplot,
         distfun = function(c) as.dist(1 - c),
         col = hcl.colors(n = 12, palette = 'Blue-Red'))
 ```
+
+### Model comparison
+
+So, which model is best?
+
+We will use leave-one-out comparison to compare the two models we just built: `notrend_mod` which does not have a dynamic trend, and `ar1trend` which includes an autoregressive latent trend model.
+
+This workshop isn't really about model comparison, so we will just use this approach as an example, but there are other ways you could compare these models.  metric of comparison will be expected log pointwise predictive density (ELPD)
+
+```{r}
+mvgam::loo_compare(notrend_mod, ar1trend_mod,
+                   model_names = c("No trend", "AR1 trend"))
+```
+
+The AR1 trend model performs better than the model without a dynamic trend (here, we want high values for elpd_dif)
