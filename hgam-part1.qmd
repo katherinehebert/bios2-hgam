@@ -50,6 +50,8 @@ This workshop is based on Nicholas J. Clark's Physalia course "Ecological foreca
 
 We recommend previous experience with GAMs before taking this training. If you would like to follow an introduction to GAMs before this workshop, please have a look at Eric Pedersen’s [Introduction to GAMs](https://bios2.usherbrooke.ca/2021/10/20/workshop-gams-2021/) and/or the Québec Centre for Biodiversity Science’s [Workshop 8: GAMs](http://r.qcbs.ca/workshop08/book-en/).
 
+#### Familiarity with Bayesian 
+
 #### R & RStudio
 
 The workshop assumes basic familiarity with R/RStudio. To be able to follow along with the practical exercises on your own computer, in addition to downloading the data files above, you will need to do the following:
@@ -63,13 +65,14 @@ Install and load the packages that we will use during the workshop by executing 
 ```{r, eval = T, message = FALSE}
 # install packages from CRAN
 
-# install.packages(pkgs = c("mvgam", "mgcv", "gratia", "marginaleffects", "ggplot2"), dependencies = TRUE)
+# install.packages(pkgs = c("dplyr", "tidyr", mvgam", "mgcv", "gratia", "marginaleffects", "corrplot", "ggplot2"), dependencies = TRUE)
 library("dplyr")
 library("tidyr")
 library("mvgam")
 library("mgcv")
 library("gratia")
 library("marginaleffects")
+library("corrplot")
 library("ggplot2")
 
 # set all ggplots to this theme
