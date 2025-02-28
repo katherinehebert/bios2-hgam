@@ -12,3 +12,5 @@ draft.R
 /hgam-part1_cache
 /cache
 /hgam-slides_cache
+/.quarto/
+/_site/
