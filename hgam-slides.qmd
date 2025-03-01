@@ -248,7 +248,7 @@ Pedersen et al. (2019)
 
 -   We’ve previously identified hierarchies in the data; now, how do we incorporate them into our models? We represent these hierarchies using smooth functions in our equations.
 
-### HGAM equation
+### HGAM equation with mgcv
 
 ```{r}
 # gam(y ~ s(time, k = k_number_time_steps, bs = "cs") +
@@ -269,6 +269,22 @@ s() = smooth function
 k = number of knots ; can be the number of time steps or any fraction of that number
 
 bs = type of basis functions
+
+### Types of basis functions
+
+-   Thin plate regression splines ("tp" in mgcv): General purpose spline basis. If you do not have phenology in your data and your smooth only has one covariate = probably this type of basis functions. To learn more –\> [Wood (2003)](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/1467-9868.00374)
+
+-   Random effect ("re"): Similar to random effect in mixed model. Creates an intercept per grouping level.
+
+-   Cyclic cubic regression splines ("cs"): Useful to fit models with cyclic components or phenology.
+
+-   Factor smoother ("fs"): Produces a smooth curve for each level of a single factor. This means that a model can be constructed with a **main effect plus factor level smooth deviations from that effect**.
+
+#### Factor smoother
+
+-   Global trend across all levels of a grouping variable
+
+-   Species-specific trends sharing the same wiggliness, but differing in shapes
 
 # Part 2: DGAMs {background-image="waves2.png"}
 
