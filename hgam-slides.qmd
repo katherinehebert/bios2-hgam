@@ -232,13 +232,43 @@ head(plankton_data) %>%
 
 -   "series" = grouping variable with 5 levels
 
-### What is a hierarchical model?
+### What is a hierarchical model (HM)?
 
--   Hierarchical generalised linear models, or Hierarchical models, are used to estimate linear relationships between predictors and a response variable, but impose a structure where the predictors are organized into groups.
+-   Hierarchical generalised linear models, or Hierarchical models (HM), are used to estimate linear relationships between predictors and a response variable, but impose a structure where the predictors are organized into groups.
 
 -   The relationship between predictors dans response variable may differ across groups.
 
 Pedersen et al. (2019)
+
+## Now that we have seen GAMs and HMs... What are HGAMs?
+
+## HGAM
+
+-   A hierarchical generalized additive model, or HGAM, is the integration of GAMS and HMs into one model. HGAMs enable us to estimate nonlinear relationships between predictors and a response variable when at least one of the predictors is a grouping variable.
+
+-   We’ve previously identified hierarchies in the data; now, how do we incorporate them into our models? We represent these hierarchies using smooth functions in our equations.
+
+### HGAM equation
+
+```{r}
+# gam(y ~ s(time, k = k_number_time_steps, bs = "cs") +
+#      s(time, series, k = number_series, bs = "fs", m = 2),
+#      family = "gaussian"
+#      data = plankton_data
+#      method = "REML")
+```
+
+Let's break it down.
+
+### Smooth function
+
+s(time, k = k_number_time_steps, bs = "cs")
+
+s() = smooth function
+
+k = number of knots ; can be the number of time steps or any fraction of that number
+
+bs = type of basis functions
 
 # Part 2: DGAMs {background-image="waves2.png"}
 
