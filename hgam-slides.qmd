@@ -187,7 +187,58 @@ gratia::draw(diatoms_gam, rug = FALSE)
 -   Splines (also called smooth or smoother) are, just like a regular function, used to estimate the relationships between covariates and the response variable, the difference being that this relationship is nonlinear.
 -   Splines are the sum of simpler functions, called basis functions.
 
-![Basis Functions. [Noam Ross - GAMs in R course, chapter 1.](https://noamross.github.io/gams-in-r-course/chapter1)](basis_functions.jpeg)
+![[Noam Ross - GAMs in R course, chapter 1.](https://noamross.github.io/gams-in-r-course/chapter1)](basis_functions.jpeg)
+
+## What determines how "curvy" splines are?
+
+-   In the GAM world we have a specific term for this: ✨*wiggliness*✨
+
+-   Wiggliness refers to the degree of flexibility in the model's fitted function. It describes how much the model can fluctuate to fit the data.
+
+-   The number of basis functions (knots) we set our model to have is the maximum wiggliness we expect our relationship to have.
+
+![[Nicholas Clark - Temporal autocorrelation in GAMs and the mvgam package](https://ecogambler.netlify.app/blog/autocorrelated-gams/)](basis_weights.gif)
+
+## Wiggliness
+
+-   The model penalizes the wiggliness, which should shrink down our wiggliness to the right amount to match the patterns in the data.
+
+-   If the wiggliness is too high, we risk overfitting, which results in a model that is less generalizable and more specific to this exact set of data.
+
+-   **wiggliness** **≠ shape of the curve**
+
+## What is a hierarchy?
+
+### What is a hierarchy in biology?
+
+-   It refers to the organization of organisms into levels and their inherent nestedness.
+
+-   You're probably familiar with the taxonomic hierarchy
+
+![](taxo_hier.jpg)
+
+We find often find that nature tends to "organize" itself in hierarchies.
+
+### What is a hierarchy in data?
+
+We find hierarchies in data when a data item is linked to another data item by a hierarchical relationship, where we would qualify one data item to be the "parent" of the other.
+
+```{r}
+head(plankton_data) %>%
+
+```
+
+-   "month" is nested in "year"
+
+-   "series" = grouping variable with 5 levels
+
+### What is a hierarchical model?
+
+-   Hierarchical generalised linear models, or Hierarchical models, are used to estimate linear relationships between predictors and a response variable, but impose a structure where the predictors are organized into groups.
+
+-   The relationship between predictors dans response variable may differ across groups.
+
+Pedersen et al. (2019)
 
 # Part 2: DGAMs {background-image="waves2.png"}
 
