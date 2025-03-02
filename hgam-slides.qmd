@@ -227,7 +227,6 @@ We find hierarchies in data when a data item is linked to another data item by a
 
 ```{r}
 head(plankton_data) 
-
 ```
 
 -   "month" is nested in "year"
@@ -303,6 +302,24 @@ bs = type of basis functions
 -   Species-specific trends sharing the same wiggliness, but differing in shapes
 
 ------------------------------------------------------------------------
+
+## Types of functional variations that can be fitted with HGAMs
+
+-   Based on [Pedersen et al. (2019)](https://peerj.com/articles/6876/)
+
+![](pedersenetal.jpg){width="390"}
+
+------------------------------------------------------------------------
+
+## Types of functional variations that can be fitted with HGAMs
+
+-   5 models are discussed in the paper (G, GS, GI, S, and I)
+
+![From Hierarchical generalized adidtive models in ecology: an introduction with mgcv, by Pedersen et al. (2019)](fig4_pedersen_etal.jpg){width="476"}
+
+------------------------------------------------------------------------
+
+## Let's try some of these on our data!
 
 # Part 2: DGAMs {background-image="waves2.png"}
 
