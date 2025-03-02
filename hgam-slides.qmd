@@ -224,7 +224,7 @@ We find often find that nature tends to "organize" itself in hierarchies.
 We find hierarchies in data when a data item is linked to another data item by a hierarchical relationship, where we would qualify one data item to be the "parent" of the other.
 
 ```{r}
-head(plankton_data) %>%
+head(plankton_data) 
 
 ```
 
