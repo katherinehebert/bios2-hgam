@@ -219,7 +219,7 @@ gratia::draw(diatoms_gam, rug = FALSE)
 
 We find often find that nature tends to "organize" itself in hierarchies.
 
------
+------------------------------------------------------------------------
 
 ### What is a hierarchy in data?
 
@@ -234,7 +234,7 @@ head(plankton_data)
 
 -   "series" = grouping variable with 5 levels
 
------
+------------------------------------------------------------------------
 
 ### What is a hierarchical model (HM)?
 
@@ -244,12 +244,11 @@ head(plankton_data)
 
 Pedersen et al. (2019)
 
------
+------------------------------------------------------------------------
 
 ## Now that we have seen GAMs and HMs... What are HGAMs?
 
-
------
+------------------------------------------------------------------------
 
 ## HGAM
 
@@ -257,7 +256,7 @@ Pedersen et al. (2019)
 
 -   We’ve previously identified hierarchies in the data; now, how do we incorporate them into our models? We represent these hierarchies using smooth functions in our equations.
 
------
+------------------------------------------------------------------------
 
 ### HGAM equation with mgcv
 
@@ -271,8 +270,7 @@ Pedersen et al. (2019)
 
 Let's break it down.
 
------
-
+------------------------------------------------------------------------
 
 ### Smooth function
 
@@ -284,8 +282,7 @@ k = number of knots ; can be the number of time steps or any fraction of that nu
 
 bs = type of basis functions
 
------
-
+------------------------------------------------------------------------
 
 ### Types of basis functions
 
@@ -297,8 +294,7 @@ bs = type of basis functions
 
 -   Factor smoother ("fs"): Produces a smooth curve for each level of a single factor. This means that a model can be constructed with a **main effect plus factor level smooth deviations from that effect**.
 
------
-
+------------------------------------------------------------------------
 
 #### Factor smoother
 
@@ -306,8 +302,7 @@ bs = type of basis functions
 
 -   Species-specific trends sharing the same wiggliness, but differing in shapes
 
------
-
+------------------------------------------------------------------------
 
 # Part 2: DGAMs {background-image="waves2.png"}
 
