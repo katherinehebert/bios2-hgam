@@ -126,12 +126,16 @@ ggplot(data = plankton_data, aes(x = time)) +
        col = "Group")
 ```
 
+------------------------------------------------------------------------
+
 # Part 1: HGAMs {background-image="waves2.png"}
 
 ## A (very) brief introduction to GAMs
 
 -   Definition: Generalized additive models (GAMs) are models that allow us enough flexibility to depict nonlinear relationships, without being so "black-boxy" that they become so hard to interpret. They offer a middle ground between simple and complex models.
--   Why are they relevant in ecology? A lot of relationships in ecology are not linear and this when these models come in handy,
+-   Why are they relevant in ecology? A lot of relationships in ecology are inherently nonlinear and GAMs are particularly useful in capturing these more complex relationships.
+
+------------------------------------------------------------------------
 
 ## Nonlinear relationship
 
@@ -145,6 +149,8 @@ ggplot(diatoms_data, aes(x = time, y = y)) +
   labs(title = "Diatoms Data Points", x = "Time", y = "Abundance (z-score)") +
   theme_minimal()
 ```
+
+------------------------------------------------------------------------
 
 ## Linear model on diatoms data
 
@@ -166,6 +172,8 @@ ggplot(diatoms_data, aes(x = time, y = y)) +
   theme_minimal()
 ```
 
+------------------------------------------------------------------------
+
 ## GAM on diatoms data
 
 Now, if we fit a GAM on our data
@@ -182,12 +190,16 @@ We immediately see a better fit, as the spline seems to follow our data points m
 gratia::draw(diatoms_gam, rug = FALSE)
 ```
 
+------------------------------------------------------------------------
+
 ## What are splines?
 
--   Splines (also called smooth or smoother) are, just like a regular function, used to estimate the relationships between covariates and the response variable, the difference being that this relationship is nonlinear.
+-   Splines (also known as smooths or smoothers) are a type of function used to estimate nonlinear relationships between covariates and the response variable.
 -   Splines are the sum of simpler functions, called basis functions.
 
-![[Noam Ross - GAMs in R course, chapter 1.](https://noamross.github.io/gams-in-r-course/chapter1)](basis_functions.jpeg)
+![[Noam Ross - GAMs in R course, chapter 1.](https://noamross.github.io/gams-in-r-course/chapter1)](basis_functions.jpeg){fig-align="center"}
+
+------------------------------------------------------------------------
 
 ## What determines how "curvy" splines are?
 
@@ -199,25 +211,29 @@ gratia::draw(diatoms_gam, rug = FALSE)
 
 ![[Nicholas Clark - Temporal autocorrelation in GAMs and the mvgam package](https://ecogambler.netlify.app/blog/autocorrelated-gams/)](basis_weights.gif)
 
+------------------------------------------------------------------------
+
 ## Wiggliness
 
--   The model penalizes the wiggliness, which should shrink down our wiggliness to the right amount to match the patterns in the data.
+-   The model penalizes the wiggliness (penalized log likelihood), which should shrink down our wiggliness to the right amount to match the patterns in the data.
 
 -   If the wiggliness is too high, we risk overfitting, which results in a model that is less generalizable and more specific to this exact set of data.
 
 -   **wiggliness** **≠ shape of the curve**
 
+------------------------------------------------------------------------
+
 ## What is a hierarchy?
 
 ### What is a hierarchy in biology?
 
--   It refers to the organization of organisms into levels and their inherent nestedness.
+-   It refers to the organization of organisms into levels
 
 -   You're probably familiar with the taxonomic hierarchy
 
-![](taxo_hier.jpg)
+![](taxo_hier.jpg){fig-align="center"}
 
-We find often find that nature tends to "organize" itself in hierarchies.
+We find that nature often tends to "organize" itself into hierarchies.
 
 ------------------------------------------------------------------------
 
@@ -239,7 +255,7 @@ head(plankton_data)
 
 -   Hierarchical generalised linear models, or Hierarchical models (HM), are used to estimate linear relationships between predictors and a response variable, but impose a structure where the predictors are organized into groups.
 
--   The relationship between predictors dans response variable may differ across groups.
+-   The relationship between predictors and response variable may differ across groups.
 
 Pedersen et al. (2019)
 
@@ -285,13 +301,15 @@ bs = type of basis functions
 
 ### Types of basis functions
 
--   Thin plate regression splines ("tp" in mgcv): General purpose spline basis. If you do not have phenology in your data and your smooth only has one covariate = probably this type of basis functions. To learn more –\> [Wood (2003)](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/1467-9868.00374)
+-   Thin Plate Regression Splines ("tp" in mgcv): General purpose spline basis. If you do not have phenology in your data and your smooth only has one covariate = probably this type of basis functions. To learn more –\> [Wood (2003)](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/1467-9868.00374)
 
--   Random effect ("re"): Similar to random effect in mixed model. Creates an intercept per grouping level.
+-   Random Effect ("re"): Similar to random effect in mixed model. Creates an intercept per grouping level.
 
--   Cyclic cubic regression splines ("cs"): Useful to fit models with cyclic components or phenology.
+-   Cyclic Cubic Regression Splines ("cs"): Useful to fit models with cyclic components or phenology.
 
--   Factor smoother ("fs"): Produces a smooth curve for each level of a single factor. This means that a model can be constructed with a **main effect plus factor level smooth deviations from that effect**.
+-   Tensor product ("te"): We use this to look at interaction between predictors if we believe it to have an impact on the relationship between the predictors and the response variable. *For example: the interaction of temperature and latitude on the abundance of a species of plant.*
+
+-   Factor Smoother ("fs"): Produces a smooth curve for each level of a single factor. This means that a model can be constructed with a **main effect plus factor level smooth deviations from that effect**.
 
 ------------------------------------------------------------------------
 
@@ -307,7 +325,7 @@ bs = type of basis functions
 
 -   Based on [Pedersen et al. (2019)](https://peerj.com/articles/6876/)
 
-![](pedersenetal.jpg){width="390"}
+![](pedersenetal.jpg){fig-align="center" width="390"}
 
 ------------------------------------------------------------------------
 
@@ -315,7 +333,7 @@ bs = type of basis functions
 
 -   5 models are discussed in the paper (G, GS, GI, S, and I)
 
-![From Hierarchical generalized adidtive models in ecology: an introduction with mgcv, by Pedersen et al. (2019)](fig4_pedersen_etal.jpg){width="476"}
+![From Hierarchical generalized adidtive models in ecology: an introduction with mgcv, by Pedersen et al. (2019)](fig4_pedersen_etal.jpg){fig-align="center" width="476"}
 
 ------------------------------------------------------------------------
 
@@ -358,6 +376,8 @@ gratia::draw(modG)
 ```{r}
 summary(modG)
 ```
+
+Not the greatest fit!
 
 ------------------------------------------------------------------------
 
@@ -406,6 +426,8 @@ plot_predictions(modGS,
   labs(y = 'Abundance', x = 'Time')
 ```
 
+We can see more clearly the type of predictions the model makes for each level.
+
 ------------------------------------------------------------------------
 
 ## Summary
@@ -416,7 +438,27 @@ summary(modGS)
 
 ------------------------------------------------------------------------
 
+## But... Could get a better fit?
+
+-   Short answer: Probably!
+
+-   Longer answer: There's always a trade-off between a more complex model that account amount for more variations in the data, but that is prone to overfitting.
+
+-   However, these two models were pretty simple and we'll see in the next part of the training how we can get to another level of model complexity.
+
+------------------------------------------------------------------------
+
 ## Model comparison
+
+-   We won't delve into model comparison here, as it falls outside the scope of this training. However, a few options are available for comparison, such as using AIC and evaluating predictive performance.
+
+------------------------------------------------------------------------
+
+# Break
+
+Time for a little break!
+
+------------------------------------------------------------------------
 
 # Part 2: DGAMs {background-image="waves2.png"}
 
