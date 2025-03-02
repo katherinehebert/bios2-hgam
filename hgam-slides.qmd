@@ -321,6 +321,103 @@ bs = type of basis functions
 
 ## Let's try some of these on our data!
 
+**Model G: A single common smoother for all observations**
+
+```{r}
+modG <- gam(y ~                           # Abundance
+              
+            #  Global Smooth             
+            s(time, k = 60, bs = "cs") +  # k = 60, because number of time steps = 120 
+                                          # bs = "cs", because cyclic component in the data
+            
+            # Series as random effect    
+            s(series, k = 5, bs = "re"),  # k = 5, because number of series = 5
+                                          # bs = "re", to get a random effect
+            
+            method = "REML",               # Standard method for HGAMs
+            
+            family = "gaussian",
+            
+            data = plankton_data
+              
+            )
+```
+
+------------------------------------------------------------------------
+
+##  Let's look at it graphically
+
+```{r}
+gratia::draw(modG)
+```
+
+------------------------------------------------------------------------
+
+## Summary
+
+```{r}
+summary(modG)
+```
+
+------------------------------------------------------------------------
+
+## Now, if we add a bit of complexity to the model...
+
+**Model GS: A global smoother plus group-level smoothers that have the same wiggliness.**
+
+```{r}
+modGS <- gam(y ~                           # Abundance
+              
+            #  Global Smooth             
+            s(time, k = 60, bs = "cs", m = 2) +  # k = 60, because number of time steps = 120 
+                                                 # bs = "cs", because cyclic component
+            
+            # Series as random effect    
+            s(time, series, k = 60, bs = "fs", m = 2),  # k = 5, because number of series = 5
+                                                        # bs = "fs", factor smoother
+            
+            method = "REML",                            # Standard method for HGAMs
+            
+            family = "gaussian",
+            
+            data = plankton_data
+              
+            )
+```
+
+------------------------------------------------------------------------
+
+##  Let's look at it graphically
+
+```{r}
+gratia::draw(modGS)
+```
+
+------------------------------------------------------------------------
+
+## Predictions with the marginal effects library 
+
+```{r}
+plot_predictions(modGS, 
+                 condition = c('time', 'series', 'series'),
+                 points = 0.5,
+                 rug = TRUE) +
+  theme(legend.position = 'none') +
+  labs(y = 'Abundance', x = 'Time')
+```
+
+------------------------------------------------------------------------
+
+## Summary
+
+```{r}
+summary(modGS)
+```
+
+------------------------------------------------------------------------
+
+## Model comparison
+
 # Part 2: DGAMs {background-image="waves2.png"}
 
 ## So far...
