@@ -2,6 +2,8 @@
 
 [![badge](https://img.shields.io/static/v1?style=for-the-badge&label=ACCESS&message=SLIDES&color=61bf75)](https://katherinehebert.github.io/bios2-hgam/hgam-slides.html#/title-slide)
 
+[![badge](https://img.shields.io/static/v1?style=for-the-badge&label=ACCESS&message=TUTORIAL&color=bd6a9a)](https://katherinehebert.github.io/bios2-hgam-tutorial/)
+
 On March 3rd, 2025, BIOS2 will host a new training on hierarchical generalized additive models (HGAMs) by fellows Camille Lévesque and Katherine Hébert.
 
 This course is designed to demystify hierarchical modelling as powerful tools to model population dynamics, spatial distributions, and any non-linear relationships in your ecological data. The training will be divided into two blocks. First, we will cover hierarchies in biology, data, and in models to understand what hierarchical models are, some of the forms they can take, and the fundamentals of how they work. Second, we will introduce latent variable modelling as a way to explain even more of the variation in our response variables, to better disentangle the hierarchies of variation in our data. Both blocks will include a theoretical presentation followed by hands-on coding exercises to implement and interpret hierarchical GAMs.
