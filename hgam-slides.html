@@ -460,6 +460,9 @@
 </ul>
 
 <img data-src="taxo_hier.jpg" class="r-stretch"><p>We find often find that nature tends to “organize” itself in hierarchies.</p>
+</section>
+<section class="slide level2">
+
 <h3 id="what-is-a-hierarchy-in-data">What is a hierarchy in data?</h3>
 <p>We find hierarchies in data when a data item is linked to another data item by a hierarchical relationship, where we would qualify one data item to be the “parent” of the other.</p>
 <div class="cell">
@@ -470,14 +473,8 @@
 <li class="fragment"><p>“month” is nested in “year”</p></li>
 <li class="fragment"><p>“series” = grouping variable with 5 levels</p></li>
 </ul>
-<h3 id="what-is-a-hierarchical-model-hm">What is a hierarchical model (HM)?</h3>
-<ul>
-<li class="fragment"><p>Hierarchical generalised linear models, or Hierarchical models (HM), are used to estimate linear relationships between predictors and a response variable, but impose a structure where the predictors are organized into groups.</p></li>
-<li class="fragment"><p>The relationship between predictors dans response variable may differ across groups.</p></li>
-</ul>
-<p>Pedersen et al.&nbsp;(2019)</p>
 </section>
-<section id="what-is-a-hierarchy-output" class="slide level2 output-location-slide"><h2>What is a hierarchy?</h2><div class="cell output-location-slide">
+<section id="" class="slide level2 output-location-slide"><div class="cell output-location-slide">
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 6
    year month       y series       temp  time
@@ -489,7 +486,16 @@
 5  1965     1 -0.491  Other.algae -1.23     1
 6  1965     2 NA      Greens      -1.32     2</code></pre>
 </div>
-</div></section><section id="now-that-we-have-seen-gams-and-hms-what-are-hgams" class="slide level2">
+</div></section><section class="slide level2">
+
+<h3 id="what-is-a-hierarchical-model-hm">What is a hierarchical model (HM)?</h3>
+<ul>
+<li class="fragment"><p>Hierarchical generalised linear models, or Hierarchical models (HM), are used to estimate linear relationships between predictors and a response variable, but impose a structure where the predictors are organized into groups.</p></li>
+<li class="fragment"><p>The relationship between predictors dans response variable may differ across groups.</p></li>
+</ul>
+<p>Pedersen et al.&nbsp;(2019)</p>
+</section>
+<section id="now-that-we-have-seen-gams-and-hms-what-are-hgams" class="slide level2">
 <h2>Now that we have seen GAMs and HMs… What are HGAMs?</h2>
 </section>
 <section id="hgam" class="slide level2">
@@ -498,6 +504,9 @@
 <li class="fragment"><p>A hierarchical generalized additive model, or HGAM, is the integration of GAMS and HMs into one model. HGAMs enable us to estimate nonlinear relationships between predictors and a response variable when at least one of the predictors is a grouping variable.</p></li>
 <li class="fragment"><p>We’ve previously identified hierarchies in the data; now, how do we incorporate them into our models? We represent these hierarchies using smooth functions in our equations.</p></li>
 </ul>
+</section>
+<section class="slide level2">
+
 <h3 id="hgam-equation-with-mgcv">HGAM equation with mgcv</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href=""></a><span class="co"># gam(y ~ s(time, k = k_number_time_steps, bs = "cs") +</span></span>
@@ -508,11 +517,19 @@
 </div>
 
 <p>Let’s break it down.</p>
+</section>
+<section id="" class="slide level2 output-location-slide"><div class="cell output-location-slide">
+
+</div></section><section class="slide level2">
+
 <h3 id="smooth-function">Smooth function</h3>
 <p>s(time, k = k_number_time_steps, bs = “cs”)</p>
 <p>s() = smooth function</p>
 <p>k = number of knots ; can be the number of time steps or any fraction of that number</p>
 <p>bs = type of basis functions</p>
+</section>
+<section class="slide level2">
+
 <h3 id="types-of-basis-functions">Types of basis functions</h3>
 <ul>
 <li class="fragment"><p>Thin plate regression splines (“tp” in mgcv): General purpose spline basis. If you do not have phenology in your data and your smooth only has one covariate = probably this type of basis functions. To learn more –&gt; <a href="https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/1467-9868.00374">Wood (2003)</a></p></li>
@@ -520,14 +537,18 @@
 <li class="fragment"><p>Cyclic cubic regression splines (“cs”): Useful to fit models with cyclic components or phenology.</p></li>
 <li class="fragment"><p>Factor smoother (“fs”): Produces a smooth curve for each level of a single factor. This means that a model can be constructed with a <strong>main effect plus factor level smooth deviations from that effect</strong>.</p></li>
 </ul>
+</section>
+<section class="slide level2">
+
 <h4 id="factor-smoother">Factor smoother</h4>
 <ul>
 <li class="fragment"><p>Global trend across all levels of a grouping variable</p></li>
 <li class="fragment"><p>Species-specific trends sharing the same wiggliness, but differing in shapes</p></li>
 </ul>
-</section><section id="hgam-output" class="slide level2 output-location-slide"><h2>HGAM</h2><div class="cell output-location-slide">
+</section>
+<section class="slide level2">
 
-</div></section></section>
+</section></section>
 <section>
 <section id="part-2-dgams" class="title-slide slide level1 center" data-background-image="waves2.png">
 <h1>Part 2: DGAMs</h1>
