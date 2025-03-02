@@ -13,3 +13,5 @@ draft.R
 /cache
 /hgam-slides_cache
 /.quarto
+
+/.quarto/
